@@ -1,0 +1,10 @@
+bin/
+obj/
+dist/
+.dotnet-home/
+*.user
+*.suo
+*.log
+app.pid
+portable.flag
+data/
