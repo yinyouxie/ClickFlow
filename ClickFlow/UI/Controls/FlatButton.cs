@@ -157,18 +157,22 @@ internal class FlatButton : Control
             }
 
             var textRight = Width - pad - (hotkeyWidth > 0 ? hotkeyWidth + 8 : 0);
-            var textRect = new Rectangle(
-                (int)x,
-                0,
-                Math.Max(0, (int)(textRight - x)),
-                Height + 1);
+            var centered = Icon == Glyph.None && hotkeyWidth == 0;
+            var textRect = centered
+                ? new Rectangle(6, 0, Math.Max(0, Width - 12), Height + 1)
+                : new Rectangle(
+                    (int)x,
+                    0,
+                    Math.Max(0, (int)(textRight - x)),
+                    Height + 1);
             TextRenderer.DrawText(
                 e.Graphics,
                 Text,
                 Font,
                 textRect,
                 textColor,
-                TextFormatFlags.Left | TextFormatFlags.VerticalCenter |
+                (centered ? TextFormatFlags.HorizontalCenter : TextFormatFlags.Left) |
+                TextFormatFlags.VerticalCenter |
                 TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis |
                 TextFormatFlags.NoPadding);
 

@@ -55,16 +55,11 @@ internal sealed class SettingsDialog : Form
         };
         var headerSpacer = new Panel { Dock = DockStyle.Top, Height = 8, BackColor = Color.Transparent };
 
-        var footer = new Panel { Dock = DockStyle.Bottom, Height = 58, BackColor = Color.Transparent };
-        var footerActions = new FlowLayoutPanel
+        var footer = new Panel { Dock = DockStyle.Bottom, Height = 68, BackColor = Color.Transparent };
+        footer.Paint += (_, e) =>
         {
-            Dock = DockStyle.Right,
-            AutoSize = true,
-            AutoSizeMode = AutoSizeMode.GrowAndShrink,
-            FlowDirection = FlowDirection.RightToLeft,
-            WrapContents = false,
-            Padding = new Padding(0, 8, 0, 0),
-            BackColor = Color.Transparent
+            using var pen = new Pen(Theme.BorderSoft, 1);
+            e.Graphics.DrawLine(pen, 0, 0, footer.Width, 0);
         };
 
         var save = new FlatButton
@@ -72,8 +67,7 @@ internal sealed class SettingsDialog : Form
             Text = "保存",
             Style = FlatButtonStyle.Solid,
             AccentColor = Theme.Green,
-            Size = new Size(112, 38),
-            Margin = new Padding(0, 0, 0, 0)
+            Size = new Size(108, 40)
         };
         save.Click += (_, _) => { DialogResult = DialogResult.OK; Close(); };
 
@@ -81,21 +75,27 @@ internal sealed class SettingsDialog : Form
         {
             Text = "取消",
             Style = FlatButtonStyle.Ghost,
-            Size = new Size(96, 38),
-            Margin = new Padding(0, 0, 10, 0)
+            Size = new Size(96, 40)
         };
         cancel.Click += (_, _) => { DialogResult = DialogResult.Cancel; Close(); };
 
-        footerActions.Controls.Add(save);
-        footerActions.Controls.Add(cancel);
-        footer.Controls.Add(footerActions);
+        footer.Controls.Add(save);
+        footer.Controls.Add(cancel);
+        footer.Resize += (_, _) =>
+        {
+            var right = footer.ClientSize.Width - 24;
+            save.Left = Math.Max(0, right - save.Width);
+            cancel.Left = Math.Max(0, save.Left - cancel.Width - 10);
+            save.Top = 14;
+            cancel.Top = 14;
+        };
 
         _content = new Panel
         {
             Dock = DockStyle.Fill,
             AutoScroll = true,
             BackColor = Color.Transparent,
-            Padding = new Padding(0, 0, 6, 0)
+            Padding = new Padding(0, 0, 18, 0)
         };
         var content = _content;
         var flow = new FlowLayoutPanel
@@ -110,7 +110,7 @@ internal sealed class SettingsDialog : Form
             Padding = new Padding(0)
         };
         content.Controls.Add(flow);
-        content.Resize += (_, _) => flow.Width = Math.Max(400, content.ClientSize.Width - 18);
+        content.Resize += (_, _) => flow.Width = Math.Max(400, content.ClientSize.Width - 30);
 
         var appearance = BuildAppearance(out _fontScale);
         var general = BuildGeneral(out _startupPage, out _checkUpdates);
@@ -178,7 +178,7 @@ internal sealed class SettingsDialog : Form
         var card = SectionCard(
             "外观",
             "选择背景配色和界面字号。字号会在重启轻录后完全生效。",
-            322);
+            340);
 
         var swatchFlow = new FlowLayoutPanel
         {
@@ -254,7 +254,7 @@ internal sealed class SettingsDialog : Form
         var card = SectionCard(
             "通用",
             "启动时打开哪个页面，以及是否自动检查新版本。",
-            244);
+            258);
 
         var languageLabel = new Label
         {
@@ -327,7 +327,7 @@ internal sealed class SettingsDialog : Form
         var card = SectionCard(
             "数据",
             "录制记录默认保存在程序旁的 data 文件夹。删除记录会同时删除对应文件。",
-            172);
+            180);
 
         var path = new Label
         {
@@ -374,7 +374,7 @@ internal sealed class SettingsDialog : Form
         var card = SectionCard(
             "关于与更新",
             "轻录 ClickFlow · 本地录制与回放工具",
-            190);
+            200);
 
         var version = new Label
         {
