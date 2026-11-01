@@ -12,7 +12,7 @@ internal sealed partial class MainForm
         _stopButton.Click += (_, _) => StopEverything();
         _nav.SelectedIndexChanged += (_, _) => OnNavigationChanged();
         _helpButton.Click += (_, _) => ShowHelp();
-        _themeButton.Click += (_, _) => ShowThemeMenu();
+        _settingsButton.Click += (_, _) => ShowSettings();
         _importButton.Click += (_, _) => ImportMacroDialog();
         _folderButton.Click += (_, _) => RecordingLibrary.OpenFolder();
         _historyFlow.Resize += (_, _) => ResizeHistoryCards();
@@ -109,7 +109,7 @@ internal sealed partial class MainForm
         DragDrop += OnFileDragDrop;
 
         _toolTip.SetToolTip(_helpButton, "使用帮助 (Ctrl+H)");
-        _toolTip.SetToolTip(_themeButton, "背景配色");
+        _toolTip.SetToolTip(_settingsButton, "设置");
         _toolTip.SetToolTip(_importButton, "把外部 .cfmacro 导入录制历史 (Ctrl+O)");
         _toolTip.SetToolTip(_folderButton, "打开录制文件所在文件夹");
         _toolTip.SetToolTip(_captureButton, "读取当前鼠标坐标；也可以在任意窗口按 F5");

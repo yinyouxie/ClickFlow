@@ -24,7 +24,8 @@ internal enum Glyph
     Close,
     ChevronUp,
     ChevronDown,
-    Palette
+    Palette,
+    Settings
 }
 
 internal sealed record ThemePalette(
@@ -74,16 +75,44 @@ internal static class Theme
     public static readonly Color Purple = Hex("#B59BFF");
     public static readonly Color Cyan = Hex("#58D6E8");
 
-    public static readonly Font Body = new("Microsoft YaHei UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-    public static readonly Font BodySmall = new("Microsoft YaHei UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
-    public static readonly Font BodyBold = new("Microsoft YaHei UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
-    public static readonly Font Label = new("Microsoft YaHei UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-    public static readonly Font LabelBold = new("Microsoft YaHei UI", 10F, FontStyle.Bold, GraphicsUnit.Point);
-    public static readonly Font Heading = new("Microsoft YaHei UI", 12F, FontStyle.Bold, GraphicsUnit.Point);
-    public static readonly Font Hero = new("Microsoft YaHei UI", 18F, FontStyle.Bold, GraphicsUnit.Point);
-    public static readonly Font Display = new("Microsoft YaHei UI", 30F, FontStyle.Bold, GraphicsUnit.Point);
-    public static readonly Font TinyMono = new("Consolas", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
-    public static readonly Font Mono = new("Consolas", 9F, FontStyle.Regular, GraphicsUnit.Point);
+    public static Font Body { get; private set; } = new("Microsoft YaHei UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+    public static Font BodySmall { get; private set; } = new("Microsoft YaHei UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
+    public static Font BodyBold { get; private set; } = new("Microsoft YaHei UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
+    public static Font Label { get; private set; } = new("Microsoft YaHei UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
+    public static Font LabelBold { get; private set; } = new("Microsoft YaHei UI", 10F, FontStyle.Bold, GraphicsUnit.Point);
+    public static Font Heading { get; private set; } = new("Microsoft YaHei UI", 12F, FontStyle.Bold, GraphicsUnit.Point);
+    public static Font Hero { get; private set; } = new("Microsoft YaHei UI", 18F, FontStyle.Bold, GraphicsUnit.Point);
+    public static Font Display { get; private set; } = new("Microsoft YaHei UI", 30F, FontStyle.Bold, GraphicsUnit.Point);
+    public static Font TinyMono { get; private set; } = new("Consolas", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
+    public static Font Mono { get; private set; } = new("Consolas", 9F, FontStyle.Regular, GraphicsUnit.Point);
+
+    public static void ApplyFontScale(float scale)
+    {
+        scale = Math.Clamp(scale, 0.9f, 1.1f);
+        Body = MakeFont("Microsoft YaHei UI", 9F * scale, FontStyle.Regular);
+        BodySmall = MakeFont("Microsoft YaHei UI", 8.25F * scale, FontStyle.Regular);
+        BodyBold = MakeFont("Microsoft YaHei UI", 9F * scale, FontStyle.Bold);
+        Label = MakeFont("Microsoft YaHei UI", 10F * scale, FontStyle.Regular);
+        LabelBold = MakeFont("Microsoft YaHei UI", 10F * scale, FontStyle.Bold);
+        Heading = MakeFont("Microsoft YaHei UI", 12F * scale, FontStyle.Bold);
+        Hero = MakeFont("Microsoft YaHei UI", 18F * scale, FontStyle.Bold);
+        Display = MakeFont("Microsoft YaHei UI", 30F * scale, FontStyle.Bold);
+        TinyMono = MakeFont("Consolas", 8.25F * scale, FontStyle.Regular);
+        Mono = MakeFont("Consolas", 9F * scale, FontStyle.Regular);
+    }
+
+    private static Font MakeFont(string family, float size, FontStyle style)
+    {
+        try
+        {
+            return new Font(family, size, style, GraphicsUnit.Point);
+        }
+        catch
+        {
+            var fallbackFamily = SystemFonts.MessageBoxFont?.FontFamily ?? FontFamily.GenericSansSerif;
+            return new Font(fallbackFamily, size, style, GraphicsUnit.Point);
+        }
+    }
 
     public static Color Hex(string hex) => ColorTranslator.FromHtml(hex);
 
@@ -440,6 +469,27 @@ internal static class Theme
                 g.FillEllipse(dot, cx - d * 0.24f, cy - d * 0.18f, d * 0.16f, d * 0.16f);
                 g.FillEllipse(dot, cx + d * 0.06f, cy - d * 0.28f, d * 0.14f, d * 0.14f);
                 g.FillEllipse(dot, cx + d * 0.10f, cy + d * 0.08f, d * 0.15f, d * 0.15f);
+                break;
+            }
+            case Glyph.Settings:
+            {
+                var outer = s * 0.26f;
+                var inner = s * 0.08f;
+                g.DrawEllipse(pen, cx - outer, cy - outer, outer * 2, outer * 2);
+                g.DrawEllipse(pen, cx - inner, cy - inner, inner * 2, inner * 2);
+                for (var i = 0; i < 8; i++)
+                {
+                    var angle = i * Math.PI / 4;
+                    var r1 = outer + s * 0.02f;
+                    var r2 = s * 0.40f;
+                    g.DrawLine(
+                        pen,
+                        cx + (float)Math.Cos(angle) * r1,
+                        cy + (float)Math.Sin(angle) * r1,
+                        cx + (float)Math.Cos(angle) * r2,
+                        cy + (float)Math.Sin(angle) * r2);
+                }
+
                 break;
             }
         }

@@ -13,6 +13,10 @@ public sealed class AppSettings
     public bool RestoreCursor { get; set; } = true;
     public string ThemeId { get; set; } = "deep-space";
     public int CustomThemeArgb { get; set; }
+    public double UiScale { get; set; } = 1.0;
+    public string Language { get; set; } = "zh-CN";
+    public string StartupPage { get; set; } = "macro";
+    public bool CheckUpdatesOnStartup { get; set; }
 
     public bool AutoUseCurrentPosition { get; set; } = true;
     public int AutoX { get; set; }

@@ -9,7 +9,7 @@ internal sealed partial class MainForm
     private SegmentedControl _nav = null!;
     private StatusPill _statusPill = null!;
     private FlatButton _helpButton = null!;
-    private FlatButton _themeButton = null!;
+    private FlatButton _settingsButton = null!;
     private TableLayoutPanel _body = null!;
     private TableLayoutPanel _leftMacro = null!;
     private TableLayoutPanel _leftAuto = null!;
@@ -165,10 +165,10 @@ internal sealed partial class MainForm
             DotColor = Theme.Green
         };
 
-        _themeButton = new FlatButton
+        _settingsButton = new FlatButton
         {
             Text = string.Empty,
-            Icon = Glyph.Palette,
+            Icon = Glyph.Settings,
             Style = FlatButtonStyle.Ghost,
             Size = new Size(34, 34),
             Radius = 9
@@ -195,7 +195,7 @@ internal sealed partial class MainForm
         header.Controls.Add(subtitle);
         header.Controls.Add(_nav);
         header.Controls.Add(_statusPill);
-        header.Controls.Add(_themeButton);
+        header.Controls.Add(_settingsButton);
         header.Controls.Add(_helpButton);
         header.Controls.Add(divider);
 
@@ -214,9 +214,9 @@ internal sealed partial class MainForm
         _nav.Top = 14;
         _helpButton.Left = _header.Width - _helpButton.Width;
         _helpButton.Top = 14;
-        _themeButton.Left = _helpButton.Left - _themeButton.Width - 8;
-        _themeButton.Top = 14;
-        _statusPill.Left = _themeButton.Left - _statusPill.Width - 12;
+        _settingsButton.Left = _helpButton.Left - _settingsButton.Width - 8;
+        _settingsButton.Top = 14;
+        _statusPill.Left = _settingsButton.Left - _statusPill.Width - 12;
         _statusPill.Top = 17;
     }
 
@@ -926,7 +926,7 @@ internal sealed partial class MainForm
         };
         _footerVersion = new Label
         {
-            Text = "v1.1.2",
+            Text = "v1.1.3",
             Font = Theme.TinyMono,
             ForeColor = Theme.MutedDim,
             BackColor = Color.Transparent,

@@ -71,6 +71,7 @@ internal sealed partial class MainForm : Form
     {
         _initialFile = initialFile;
         _settings = MacroStore.LoadSettings();
+        Theme.ApplyFontScale((float)_settings.UiScale);
         Theme.Apply(Theme.Resolve(_settings.ThemeId, _settings.CustomThemeArgb));
         BuildUi();
         WireEvents();
@@ -152,6 +153,17 @@ internal sealed partial class MainForm : Form
         {
             ImportMacroFile(_initialFile, select: true);
         }
+        else if (string.Equals(_settings.StartupPage, "auto", StringComparison.OrdinalIgnoreCase))
+        {
+            _nav.SelectedIndex = 1;
+        }
+
+        if (_settings.CheckUpdatesOnStartup)
+        {
+            _ = CheckUpdatesOnStartupAsync();
+        }
+
+
 
         var missing = new List<string>();
         if (!RecordHotkeyAvailable) missing.Add("F1/Ctrl+F1");
@@ -642,7 +654,7 @@ internal sealed partial class MainForm : Form
         _stopButton.Enabled = _state != RunState.Idle;
         _importButton.Enabled = idle;
         _folderButton.Enabled = idle;
-        _themeButton.Enabled = idle;
+        _settingsButton.Enabled = idle;
         _nav.Enabled = idle;
 
         foreach (var card in _historyCards)
