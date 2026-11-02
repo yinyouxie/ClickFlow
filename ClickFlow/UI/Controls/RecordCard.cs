@@ -7,7 +7,7 @@ internal class RecordCard : Control
     private bool _recording;
     private bool _hovered;
     private float _pulsePhase;
-    private string _hint = "F1 开始 / 停止";
+    private string _hint = L.T("F1 开始 / 停止", "F1 start / stop");
     private string _hotkeyLabel = "F1";
 
     public string HotkeyLabel
@@ -59,7 +59,7 @@ internal class RecordCard : Control
         TabStop = true;
         Height = 108;
         AccessibleRole = AccessibleRole.PushButton;
-        AccessibleName = "录制操作";
+        AccessibleName = L.T("录制操作", "Recording");
     }
 
     protected override void OnPaintBackground(PaintEventArgs e)
@@ -126,10 +126,14 @@ internal class RecordCard : Control
             e.Graphics.FillEllipse(dot, circle.Left + 12, circle.Top + 12, 26, 26);
         }
 
-        var title = _recording ? "停止录制" : "录制操作";
+        var title = _recording
+            ? L.T("停止录制", "Stop recording")
+            : L.T("录制操作", "Record");
         var subtitle = _recording
-            ? $"正在捕获鼠标与键盘，按 {_hotkeyLabel} 结束"
-            : "点击 · 拖动 / 滑动 · 滚轮 · 键盘";
+            ? L.T(
+                $"正在捕获鼠标与键盘，按 {_hotkeyLabel} 结束",
+                $"Capturing mouse and keyboard; press {_hotkeyLabel} to stop")
+            : L.T("点击 · 拖动 / 滑动 · 滚轮 · 键盘", "Click · drag / swipe · wheel · keyboard");
 
         TextRenderer.DrawText(
             e.Graphics,
@@ -152,7 +156,9 @@ internal class RecordCard : Control
             TextFormatFlags.NoPadding);
 
         var chipScale = WindowEffects.GetDpiScale(this);
-        var chipText = _recording ? $"{_hotkeyLabel} 停止" : _hotkeyLabel;
+        var chipText = _recording
+            ? L.T($"{_hotkeyLabel} 停止", $"{_hotkeyLabel} stop")
+            : _hotkeyLabel;
         var chipWidth = Math.Max(
             40f * chipScale,
             TextRenderer.MeasureText(chipText, Theme.BodySmall).Width + 16f * chipScale);

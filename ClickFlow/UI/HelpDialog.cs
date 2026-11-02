@@ -43,21 +43,31 @@ internal sealed class HelpDialog : Form
         hotkeyCard.Height = 260;
 
         var tips = BuildSection(
-            "录制小贴士",
-            "• 倒计时结束后，轻录会自动最小化，把前台让给目标窗口。\n" +
-            "• 拖动鼠标会被记录成一条“拖动/滑动”操作，轨迹和耗时可原样回放。\n" +
-            "• 滚轮、右键、中键、键盘组合键都可以录制。\n" +
-            "• 回放速度可设为 0.5× ~ 4×，循环次数最多 999 次。\n" +
-            "• 每次停止录制都会自动保存一份 last-session.cfmacro，重新打开轻录可恢复。");
+            L.T("录制小贴士", "Recording tips"),
+            L.T(
+                "• 倒计时结束后，轻录会自动最小化，把前台让给目标窗口。\n" +
+                "• 拖动鼠标会被记录成一条“拖动/滑动”操作，轨迹和耗时可原样回放。\n" +
+                "• 滚轮、右键、中键、键盘组合键都可以录制。\n" +
+                "• 回放速度支持 0.25× ~ 4×，循环次数最多 999 次。\n" +
+                "• 每次停止录制都会自动进入录制历史。",
+                "• After the countdown, ClickFlow minimizes and returns focus to the target window.\n" +
+                "• Dragging is recorded as a drag/swipe with its path and duration.\n" +
+                "• Wheel, right/middle click and keyboard shortcuts are supported.\n" +
+                "• Playback speed is 0.25×–4×; loops can go up to 999.\n" +
+                "• Every finished recording is added to History."));
         tips.Dock = DockStyle.Top;
         tips.Height = 176;
 
         var limits = BuildSection(
-            "使用边界",
-            "轻录使用 Windows 标准输入注入，无法操作以管理员权限运行的窗口、UAC 安全桌面、锁屏界面，\n" +
-            "也无法绕过部分游戏或安全软件的反作弊限制。需要操作管理员窗口时，请以管理员身份启动轻录。\n" +
-            "如果 F1–F5 被其它软件占用，轻录会自动改用 Ctrl+F1–F5；回放时按 F3/Esc 或点击顶部急停。" +
-            "\n每次录制都会自动进入录制历史；删除记录会同时删除本地文件。");
+            L.T("使用边界", "Limits"),
+            L.T(
+                "轻录使用 Windows 标准输入注入，无法操作以管理员权限运行的窗口、UAC 安全桌面、锁屏界面，\n" +
+                "也无法绕过部分游戏或安全软件的反作弊限制。需要操作管理员窗口时，请以管理员身份启动轻录。\n" +
+                "如果 F1–F5 被其它软件占用，轻录会自动改用 Ctrl+F1–F5；回放时按 F3/Esc 或点击顶部急停。\n" +
+                "每次录制都会自动进入录制历史；删除记录会同时删除本地文件。",
+                "ClickFlow uses standard Windows input injection. It cannot operate elevated windows, the UAC secure desktop or the lock screen, and some games/security tools block simulated input. Run ClickFlow as administrator when needed.\n" +
+                "If F1–F5 are occupied, ClickFlow automatically uses Ctrl+F1–F5. Press F3/Esc or click Stop above during playback.\n" +
+                "Every recording is saved to History; deleting it also deletes the local file."));
         limits.Dock = DockStyle.Fill;
 
         var close = new FlatButton
@@ -84,6 +94,7 @@ internal sealed class HelpDialog : Form
         Controls.Add(close);
         close.BringToFront();
         ResumeLayout(true);
+        L.Apply(this);
     }
 
     protected override void OnHandleCreated(EventArgs e)

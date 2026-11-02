@@ -71,9 +71,11 @@ internal sealed partial class MainForm : Form
     {
         _initialFile = initialFile;
         _settings = MacroStore.LoadSettings();
+        L.SetLanguage(_settings.Language);
         Theme.ApplyFontScale((float)_settings.UiScale);
         Theme.Apply(Theme.Resolve(_settings.ThemeId, _settings.CustomThemeArgb));
         BuildUi();
+        L.Apply(this);
         UpdateBackdrop();
         WireEvents();
         ApplySettingsToUi();
@@ -189,12 +191,16 @@ internal sealed partial class MainForm : Form
         if (!_hotkeyCapture && !_hotkeyCaptureAlt) missing.Add("F5/Ctrl+F5");
         if (missing.Count > 0)
         {
-            ShowToast("快捷键被占用：" + string.Join("、", missing) + "，仍可使用窗口按钮", 9);
+            ShowToast(L.T(
+                "快捷键被占用：" + string.Join("、", missing) + "，仍可使用窗口按钮",
+                "Hotkeys occupied: " + string.Join(", ", missing) + "; window buttons still work"), 9);
         }
         else if (!_hotkeyRecord || !_hotkeyPlay || !_hotkeyStop ||
                  !_hotkeyAuto || !_hotkeyCapture)
         {
-            ShowToast("F1–F5 被占用 · 已启用 Ctrl+F1–F5", 8);
+            ShowToast(L.T(
+                "F1–F5 被占用 · 已启用 Ctrl+F1–F5",
+                "F1–F5 occupied · using Ctrl+F1–F5"), 8);
         }
 
         UpdateHotkeyLabels();
@@ -396,7 +402,7 @@ internal sealed partial class MainForm : Form
                 }
                 else
                 {
-                    ShowToast("请先停止当前操作", 2);
+                    ShowToast(L.T("请先停止当前操作", "Stop the current action first"), 2);
                 }
 
                 break;
@@ -412,7 +418,7 @@ internal sealed partial class MainForm : Form
                 }
                 else
                 {
-                    ShowToast("请先停止当前操作", 2);
+                    ShowToast(L.T("请先停止当前操作", "Stop the current action first"), 2);
                 }
 
                 break;
@@ -434,7 +440,7 @@ internal sealed partial class MainForm : Form
                 }
                 else
                 {
-                    ShowToast("请先停止当前操作", 2);
+                    ShowToast(L.T("请先停止当前操作", "Stop the current action first"), 2);
                 }
 
                 break;
@@ -446,7 +452,7 @@ internal sealed partial class MainForm : Form
                 }
                 else
                 {
-                    ShowToast("录制或回放时无法修改连点坐标", 2);
+                    ShowToast(L.T("录制或回放时无法修改连点坐标", "Cannot change click position while recording or playing"), 2);
                 }
 
                 break;
@@ -513,7 +519,7 @@ internal sealed partial class MainForm : Form
 
     private void RefreshShell()
     {
-        var text = "待机";
+        var text = L.T("待机", "Idle");
         var dot = Theme.Green;
         var pulse = false;
         double? hudProgress = null;
@@ -522,29 +528,35 @@ internal sealed partial class MainForm : Form
         switch (_state)
         {
             case RunState.Preparing:
-                text = "准备中";
+                text = L.T("准备中", "Preparing");
                 dot = Theme.Amber;
                 pulse = true;
-                hudText = $"准备开始 · {StopKeyLabel} 取消";
+                hudText = L.T($"准备开始 · {StopKeyLabel} 取消", $"Ready · {StopKeyLabel} cancel");
                 break;
             case RunState.Recording:
-                text = "录制中 " + Theme.FormatClock(_recorder.ElapsedMs);
+                text = L.T("录制中 ", "Recording ") + Theme.FormatClock(_recorder.ElapsedMs);
                 dot = Theme.Accent;
                 pulse = true;
-                hudText = $"REC 录制中  {Theme.FormatClock(_recorder.ElapsedMs)}  ·  {StopHintForRecording()}";
+                hudText = L.T(
+                    $"REC 录制中  {Theme.FormatClock(_recorder.ElapsedMs)}  ·  {StopHintForRecording()}",
+                    $"REC  {Theme.FormatClock(_recorder.ElapsedMs)}  ·  {StopHintForRecording()}");
                 break;
             case RunState.Playing:
-                text = $"回放中 {_playbackPercent}%";
+                text = L.T($"回放中 {_playbackPercent}%", $"Playing {_playbackPercent}%");
                 dot = Theme.Green;
                 pulse = true;
                 hudProgress = _playbackPercent / 100.0;
-                hudText = $"回放 {_playbackLoop}/{_playbackLoops} · {_playbackPercent}% · 点击 / {StopKeyLabel} 停止";
+                hudText = L.T(
+                    $"回放 {_playbackLoop}/{_playbackLoops} · {_playbackPercent}% · 点击 / {StopKeyLabel} 停止",
+                    $"Playing {_playbackLoop}/{_playbackLoops} · {_playbackPercent}% · click / {StopKeyLabel} to stop");
                 break;
             case RunState.AutoClicking:
-                text = $"连点中 {_autoClicker.Count:N0}";
+                text = L.T($"连点中 {_autoClicker.Count:N0}", $"Clicking {_autoClicker.Count:N0}");
                 dot = Theme.Green;
                 pulse = true;
-                hudText = $"连点中  {_autoClicker.Count:N0} 次  ·  {StopHintForAuto()}";
+                hudText = L.T(
+                    $"连点中  {_autoClicker.Count:N0} 次  ·  {StopHintForAuto()}",
+                    $"Clicking  {_autoClicker.Count:N0}  ·  {StopHintForAuto()}");
                 break;
         }
 
@@ -560,21 +572,27 @@ internal sealed partial class MainForm : Form
         _autoPulse.Count = _state == RunState.AutoClicking ? _autoClicker.Count : _autoClicker.Count;
         _autoPulse.Running = _state == RunState.AutoClicking;
         _autoPulse.Status = _state == RunState.AutoClicking
-            ? "正在连点"
+            ? L.T("正在连点", "Clicking")
             : _autoClicker.Count > 0
-                ? "已停止"
-                : "准备就绪";
+                ? L.T("已停止", "Stopped")
+                : L.T("准备就绪", "Ready");
         _autoPulse.Detail = _state == RunState.AutoClicking
-            ? $"每 {_autoInterval.Value} ms 点击一次 · 按 {StopKeyLabel} 停止"
-            : $"按 {AutoKeyLabel} 开始连点，{StopKeyLabel} 随时停止";
+            ? L.T(
+                $"每 {_autoInterval.Value} ms 点击一次 · 按 {StopKeyLabel} 停止",
+                $"Click every {_autoInterval.Value} ms · {StopKeyLabel} to stop")
+            : L.T(
+                $"按 {AutoKeyLabel} 开始连点，{StopKeyLabel} 随时停止",
+                $"Press {AutoKeyLabel} to start; {StopKeyLabel} stops");
         _autoPulse.PositionText = _autoPositionSeg.SelectedIndex == 0
-            ? "当前位置 · 跟随鼠标"
-            : $"固定坐标 · ({_autoX.Value}, {_autoY.Value})";
+            ? L.T("当前位置 · 跟随鼠标", "Current position · follow cursor")
+            : L.T(
+                $"固定坐标 · ({_autoX.Value}, {_autoY.Value})",
+                $"Fixed position · ({_autoX.Value}, {_autoY.Value})");
         _autoStatusLabel.Text = _state switch
         {
-            RunState.AutoClicking => "运行中",
-            RunState.Preparing => "准备中",
-            _ => "就绪"
+            RunState.AutoClicking => L.T("运行中", "Running"),
+            RunState.Preparing => L.T("准备中", "Preparing"),
+            _ => L.T("就绪", "Ready")
         };
         _autoStatusLabel.ForeColor = _state == RunState.AutoClicking ? Theme.Green : Theme.Muted;
 
@@ -612,30 +630,40 @@ internal sealed partial class MainForm : Form
         }
 
         var text = _mode == AppMode.Macro
-            ? $"{RecordKeyLabel} 录制 · {PlayKeyLabel} 回放 · {StopKeyLabel} 随时停止"
-            : $"{AutoKeyLabel} 开始连点 · {CaptureKeyLabel} 捕获坐标 · {StopKeyLabel} 随时停止";
+            ? L.T(
+                $"{RecordKeyLabel} 录制 · {PlayKeyLabel} 回放 · {StopKeyLabel} 随时停止",
+                $"{RecordKeyLabel} record · {PlayKeyLabel} play · {StopKeyLabel} stop")
+            : L.T(
+                $"{AutoKeyLabel} 开始连点 · {CaptureKeyLabel} 捕获坐标 · {StopKeyLabel} 随时停止",
+                $"{AutoKeyLabel} auto click · {CaptureKeyLabel} pick position · {StopKeyLabel} stop");
         var color = Theme.MutedDim;
 
         if (_state == RunState.Recording)
         {
-            text = $"正在录制 · 按 {RecordKeyLabel} 或 {StopKeyLabel} 停止";
+            text = L.T(
+                $"正在录制 · 按 {RecordKeyLabel} 或 {StopKeyLabel} 停止",
+                $"Recording · press {RecordKeyLabel} or {StopKeyLabel} to stop");
             color = Theme.Muted;
         }
         else if (_state == RunState.Playing)
         {
-            text = $"正在按原始时间轴回放 · 输入已锁定 · 按 {StopKeyLabel} 或点击上方急停";
+            text = L.T(
+                $"正在按原始时间轴回放 · 输入已锁定 · 按 {StopKeyLabel} 或点击上方急停",
+                $"Playing on the original timeline · input locked · press {StopKeyLabel} or click Stop above");
             color = Theme.Muted;
         }
         else if (_state == RunState.AutoClicking)
         {
-            text = $"正在自动连点 · 按 {AutoKeyLabel} 或 {StopKeyLabel} 停止";
+            text = L.T(
+                $"正在自动连点 · 按 {AutoKeyLabel} 或 {StopKeyLabel} 停止",
+                $"Auto clicking · press {AutoKeyLabel} or {StopKeyLabel} to stop");
             color = Theme.Muted;
         }
 
         if (_state == RunState.Idle &&
             (!StopHotkeyAvailable || !RecordHotkeyAvailable))
         {
-            text = "部分快捷键被占用，窗口按钮仍然可用";
+            text = L.T("部分快捷键被占用，窗口按钮仍然可用", "Some hotkeys are occupied; window buttons still work");
             color = Theme.Amber;
         }
 
@@ -697,10 +725,14 @@ internal sealed partial class MainForm : Form
 
         UpdateCoordinateControls();
         _recordCard.Hint = _state == RunState.Recording
-            ? $"按 {RecordKeyLabel} 或 {StopKeyLabel} 停止"
+            ? L.T(
+                $"按 {RecordKeyLabel} 或 {StopKeyLabel} 停止",
+                $"Press {RecordKeyLabel} or {StopKeyLabel} to stop")
             : _settings.StartDelaySeconds <= 0
-                ? "点击后立即开始"
-                : $"{_settings.StartDelaySeconds} 秒倒计时后开始";
+                ? L.T("点击后立即开始", "Starts immediately")
+                : L.T(
+                    $"{_settings.StartDelaySeconds} 秒倒计时后开始",
+                    $"Starts after {_settings.StartDelaySeconds}s");
 
     }
 
@@ -780,23 +812,23 @@ internal sealed partial class MainForm : Form
 
     private string StopHintForRecording()
     {
-        if (RecordHotkeyAvailable) return $"{RecordKeyLabel} 停止";
-        if (StopHotkeyAvailable) return $"{StopKeyLabel} 停止";
-        return "使用窗口按钮停止";
+        if (RecordHotkeyAvailable) return L.T($"{RecordKeyLabel} 停止", $"{RecordKeyLabel} stop");
+        if (StopHotkeyAvailable) return L.T($"{StopKeyLabel} 停止", $"{StopKeyLabel} stop");
+        return L.T("使用窗口按钮停止", "Use the window button to stop");
     }
 
     private string StopHintForPlayback()
     {
-        if (StopHotkeyAvailable) return $"{StopKeyLabel} 停止";
-        if (PlayHotkeyAvailable) return $"{PlayKeyLabel} 停止";
-        return "使用窗口按钮停止";
+        if (StopHotkeyAvailable) return L.T($"{StopKeyLabel} 停止", $"{StopKeyLabel} stop");
+        if (PlayHotkeyAvailable) return L.T($"{PlayKeyLabel} 停止", $"{PlayKeyLabel} stop");
+        return L.T("使用窗口按钮停止", "Use the window button to stop");
     }
 
     private string StopHintForAuto()
     {
-        if (StopHotkeyAvailable) return $"{StopKeyLabel} 停止";
-        if (AutoHotkeyAvailable) return $"{AutoKeyLabel} 停止";
-        return "使用窗口按钮停止";
+        if (StopHotkeyAvailable) return L.T($"{StopKeyLabel} 停止", $"{StopKeyLabel} stop");
+        if (AutoHotkeyAvailable) return L.T($"{AutoKeyLabel} 停止", $"{AutoKeyLabel} stop");
+        return L.T("使用窗口按钮停止", "Use the window button to stop");
     }
 
     private void OnEventLimitReached()
@@ -814,7 +846,7 @@ internal sealed partial class MainForm : Form
             }
 
             StopRecording();
-            ShowToast("录制事件已达到 20 万条上限，已自动停止", 6);
+            ShowToast(L.T("录制事件已达到 20 万条上限，已自动停止", "Recording reached 200k events and stopped"), 6);
         }));
     }
 
@@ -843,10 +875,12 @@ internal sealed partial class MainForm : Form
 
         MessageDialog.Show(
             this,
-            "操作没有完成",
-            message + "\n\n如果目标窗口以管理员权限运行，请以管理员身份启动轻录。",
-            "知道了",
+            L.T("操作没有完成", "Action did not finish"),
+            L.T(
+                message + "\n\n如果目标窗口以管理员权限运行，请以管理员身份启动轻录。",
+                message + "\n\nIf the target runs as administrator, start ClickFlow as administrator."),
+            L.T("知道了", "OK"),
             danger: true);
-        ShowToast("操作失败，详情已写入本地错误日志", 5);
+        ShowToast(L.T("操作失败，详情已写入本地错误日志", "Action failed; details were written to the error log"), 5);
     }
 }

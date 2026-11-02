@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using ClickFlow.UI;
 
 namespace ClickFlow.Core;
 
@@ -80,7 +81,9 @@ internal static class RecordingLibrary
 
             if (string.IsNullOrWhiteSpace(document.Name))
             {
-                document.Name = $"录制 {DateTime.Now:MM-dd HH:mm}";
+                document.Name = L.T(
+                    $"录制 {DateTime.Now:MM-dd HH:mm}",
+                    $"Recording {DateTime.Now:MM-dd HH:mm}");
             }
 
             document.Name = TrimName(document.Name);
@@ -114,7 +117,9 @@ internal static class RecordingLibrary
     {
         if (!File.Exists(entry.FilePath))
         {
-            throw new FileNotFoundException("录制文件已经不存在。", entry.FilePath);
+            throw new FileNotFoundException(
+                L.T("录制文件已经不存在。", "The recording file no longer exists."),
+                entry.FilePath);
         }
 
         return MacroStore.Load(entry.FilePath);
@@ -210,7 +215,7 @@ internal static class RecordingLibrary
                 }
 
                 document.Name = string.IsNullOrWhiteSpace(document.Name)
-                    ? "之前录制的宏"
+                    ? L.T("之前录制的宏", "Previous recording")
                     : document.Name;
                 Add(document);
                 File.Delete(path);

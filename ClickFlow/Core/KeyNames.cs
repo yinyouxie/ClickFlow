@@ -1,3 +1,5 @@
+using ClickFlow.UI;
+
 namespace ClickFlow.Core;
 
 internal static class KeyNames
@@ -97,26 +99,26 @@ internal static class KeyNames
             return $"F{vk - 0x6F}";
         }
 
-        return vk == 0 ? "键盘" : $"VK {vk:X2}";
+        return vk == 0 ? L.T("键盘", "Keyboard") : $"VK {vk:X2}";
     }
 
     public static string MouseName(MouseButtonKind button) => button switch
     {
-        MouseButtonKind.Left => "左键",
-        MouseButtonKind.Right => "右键",
-        MouseButtonKind.Middle => "中键",
-        MouseButtonKind.X1 => "侧键 1",
-        MouseButtonKind.X2 => "侧键 2",
-        _ => "鼠标"
+        MouseButtonKind.Left => L.T("左键", "Left"),
+        MouseButtonKind.Right => L.T("右键", "Right"),
+        MouseButtonKind.Middle => L.T("中键", "Middle"),
+        MouseButtonKind.X1 => L.T("侧键 1", "Side 1"),
+        MouseButtonKind.X2 => L.T("侧键 2", "Side 2"),
+        _ => L.T("鼠标", "Mouse")
     };
 
     public static string MouseVerb(MouseButtonKind button) => button switch
     {
-        MouseButtonKind.Left => "单击",
-        MouseButtonKind.Right => "右键单击",
-        MouseButtonKind.Middle => "中键单击",
-        MouseButtonKind.X1 => "侧键 1 单击",
-        MouseButtonKind.X2 => "侧键 2 单击",
-        _ => "单击"
+        MouseButtonKind.Left => L.T("单击", "Click"),
+        MouseButtonKind.Right => L.T("右键单击", "Right click"),
+        MouseButtonKind.Middle => L.T("中键单击", "Middle click"),
+        MouseButtonKind.X1 => L.T("侧键 1 单击", "Side 1 click"),
+        MouseButtonKind.X2 => L.T("侧键 2 单击", "Side 2 click"),
+        _ => L.T("单击", "Click")
     };
 }

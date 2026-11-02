@@ -74,7 +74,7 @@ internal class StatusPill : Control
         Font = Theme.BodySmall;
         Height = 30;
         Width = 150;
-        Text = "待机";
+        Text = L.T("待机", "Idle");
     }
 
     [AllowNull]

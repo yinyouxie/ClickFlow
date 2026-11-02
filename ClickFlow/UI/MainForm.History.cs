@@ -29,10 +29,12 @@ internal sealed partial class MainForm
             _historyFlow.Controls.Add(card);
         }
 
-        _historyCount.Text = $"{entries.Count} 条";
+        _historyCount.Text = L.T($"{entries.Count} 条", $"{entries.Count} items");
         _historySize.Text = entries.Count == 0
-            ? "本地保存"
-            : $"{FormatBytes(RecordingLibrary.TotalBytes)} · 本地保存";
+            ? L.T("本地保存", "Saved locally")
+            : L.T(
+                $"{FormatBytes(RecordingLibrary.TotalBytes)} · 本地保存",
+                $"{FormatBytes(RecordingLibrary.TotalBytes)} · saved locally");
         _historyEmpty.Visible = entries.Count == 0;
         if (_historyEmpty.Visible)
         {
@@ -85,14 +87,14 @@ internal sealed partial class MainForm
     {
         if (_state != RunState.Idle)
         {
-            ShowToast("请先停止当前操作", 2);
+            ShowToast(L.T("请先停止当前操作", "Stop the current action first"), 2);
             return;
         }
 
         if (!card.IsSelected)
         {
             SelectEntry(card.Entry, card);
-            ShowToast("已选中这条录制，再点一次 ▶ 回放", 2.5);
+            ShowToast(L.T("已选中这条录制，再点一次 ▶ 回放", "Selected; click ▶ again to replay"), 2.5);
             return;
         }
 
@@ -103,16 +105,18 @@ internal sealed partial class MainForm
     {
         if (_state != RunState.Idle)
         {
-            ShowToast("请先停止当前操作", 2);
+            ShowToast(L.T("请先停止当前操作", "Stop the current action first"), 2);
             return;
         }
 
         var confirmed = MessageDialog.Show(
             this,
-            "删除这条录制？",
-            $"“{card.Entry.Name}”会从录制历史中移除，本地文件也会一起删除，无法恢复。",
-            "删除",
-            "取消",
+            L.T("删除这条录制？", "Delete this recording?"),
+            L.T(
+                $"“{card.Entry.Name}”会从录制历史中移除，本地文件也会一起删除，无法恢复。",
+                $"“{card.Entry.Name}” will be removed from History, its local file will be deleted, and this cannot be undone."),
+            L.T("删除", "Delete"),
+            L.T("取消", "Cancel"),
             danger: true);
         if (!confirmed)
         {
@@ -131,11 +135,16 @@ internal sealed partial class MainForm
             }
 
             RefreshHistory(nextId);
-            ShowToast("已删除录制和本地文件", 2.5);
+            ShowToast(L.T("已删除录制和本地文件", "Recording and local file deleted"), 2.5);
         }
         catch (Exception ex)
         {
-            MessageDialog.Show(this, "删除失败", ex.Message, "知道了", danger: true);
+            MessageDialog.Show(
+                this,
+                L.T("删除失败", "Delete failed"),
+                ex.Message,
+                L.T("知道了", "OK"),
+                danger: true);
         }
     }
 
@@ -160,14 +169,16 @@ internal sealed partial class MainForm
     {
         if (_state != RunState.Idle)
         {
-            ShowToast("请先停止当前操作", 2);
+            ShowToast(L.T("请先停止当前操作", "Stop the current action first"), 2);
             return;
         }
 
         using var dialog = new OpenFileDialog
         {
-            Title = "导入录制",
-            Filter = "轻录录制 (*.cfmacro)|*.cfmacro|JSON 文件 (*.json)|*.json|所有文件 (*.*)|*.*",
+            Title = L.T("导入录制", "Import recording"),
+            Filter = L.T(
+                "轻录录制 (*.cfmacro)|*.cfmacro|JSON 文件 (*.json)|*.json|所有文件 (*.*)|*.*",
+                "ClickFlow recording (*.cfmacro)|*.cfmacro|JSON file (*.json)|*.json|All files (*.*)|*.*"),
             CheckFileExists = true,
             Multiselect = false,
             InitialDirectory = RecordingLibrary.FolderPath
@@ -207,11 +218,16 @@ internal sealed partial class MainForm
             RefreshHistory(entry.Id);
             var card = _historyCards.FirstOrDefault(c => c.Entry.Id == entry.Id);
             SelectEntry(entry, card);
-            ShowToast($"已导入 · {entry.Name}", 3);
+            ShowToast(L.T($"已导入 · {entry.Name}", $"Imported · {entry.Name}"), 3);
         }
         catch (Exception ex)
         {
-            MessageDialog.Show(this, "无法导入录制", ex.Message, "知道了", danger: true);
+            MessageDialog.Show(
+                this,
+                L.T("无法导入录制", "Cannot import recording"),
+                ex.Message,
+                L.T("知道了", "OK"),
+                danger: true);
         }
     }
 
@@ -235,7 +251,7 @@ internal sealed partial class MainForm
     {
         if (_state != RunState.Idle)
         {
-            ShowToast("请先停止当前操作", 2);
+            ShowToast(L.T("请先停止当前操作", "Stop the current action first"), 2);
             return;
         }
 

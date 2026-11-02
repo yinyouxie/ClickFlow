@@ -9,6 +9,7 @@ internal sealed class SettingsDialog : Form
     private readonly AppSettings _settings;
     private readonly List<PaletteSwatch> _swatches = new();
     private readonly SegmentedControl _fontScale;
+    private readonly SegmentedControl _language;
     private readonly SegmentedControl _startupPage;
     private readonly ModernCheckBox _checkUpdates;
     private readonly ModernCheckBox _recordMovesSetting;
@@ -118,6 +119,7 @@ internal sealed class SettingsDialog : Form
 
         var appearance = BuildAppearance(out _fontScale);
         var general = BuildGeneral(
+            out _language,
             out _startupPage,
             out _checkUpdates,
             out _recordMovesSetting,
@@ -145,11 +147,16 @@ internal sealed class SettingsDialog : Form
         ResumeLayout(true);
 
         _fontScale.SelectedIndex = ScaleIndex(settings.UiScale);
+        _language.SelectedIndex = string.Equals(
+            settings.Language,
+            "en-US",
+            StringComparison.OrdinalIgnoreCase) ? 1 : 0;
         _startupPage.SelectedIndex = string.Equals(
             settings.StartupPage,
             "auto",
             StringComparison.OrdinalIgnoreCase) ? 1 : 0;
         _checkUpdates.Checked = settings.CheckUpdatesOnStartup;
+        L.Apply(this);
     }
 
     public ThemePalette SelectedPalette => _selectedPalette;
@@ -161,6 +168,8 @@ internal sealed class SettingsDialog : Form
         _ => 1.0
     };
 
+    public string Language => _language.SelectedIndex == 1 ? "en-US" : "zh-CN";
+
     public string StartupPage => _startupPage.SelectedIndex == 1 ? "auto" : "macro";
 
     public bool CheckUpdatesOnStartup => _checkUpdates.Checked;
@@ -170,7 +179,8 @@ internal sealed class SettingsDialog : Form
     public bool RestoreCursor => _restoreCursorSetting.Checked;
 
     public bool RestartRequired =>
-        Math.Abs(UiScale - Math.Clamp(_settings.UiScale, 0.9, 1.1)) > 0.001;
+        Math.Abs(UiScale - Math.Clamp(_settings.UiScale, 0.9, 1.1)) > 0.001 ||
+        !string.Equals(Language, _settings.Language, StringComparison.OrdinalIgnoreCase);
 
     protected override void OnHandleCreated(EventArgs e)
     {
@@ -213,12 +223,12 @@ internal sealed class SettingsDialog : Form
         var card = SectionCard(
             "外观",
             "选择背景配色和界面字号。支持纯白、浅色和渐变主题。",
-            430);
+            452);
 
         var swatchFlow = new FlowLayoutPanel
         {
             Location = new Point(18, 74),
-            Size = new Size(760, 184),
+            Size = new Size(760, 202),
             BackColor = Color.Transparent,
             WrapContents = true,
             AutoScroll = false,
@@ -243,7 +253,7 @@ internal sealed class SettingsDialog : Form
             Text = "自定义颜色…",
             Style = FlatButtonStyle.Ghost,
             Size = new Size(146, 34),
-            Location = new Point(18, 270)
+            Location = new Point(18, 286)
         };
         custom.Click += (_, _) => ChooseCustomColor();
         card.Controls.Add(custom);
@@ -255,7 +265,7 @@ internal sealed class SettingsDialog : Form
             ForeColor = Theme.TextSoft,
             BackColor = Color.Transparent,
             AutoSize = true,
-            Location = new Point(18, 338)
+            Location = new Point(18, 356)
         };
         card.Controls.Add(fontLabel);
 
@@ -264,7 +274,7 @@ internal sealed class SettingsDialog : Form
             Items = new[] { "小", "标准", "大" },
             AccentColor = Theme.Blue,
             Size = new Size(224, 36),
-            Location = new Point(104, 326)
+            Location = new Point(104, 344)
         };
         card.Controls.Add(fontScale);
 
@@ -275,7 +285,7 @@ internal sealed class SettingsDialog : Form
             ForeColor = Theme.MutedDim,
             BackColor = Color.Transparent,
             AutoSize = true,
-            Location = new Point(344, 336)
+            Location = new Point(344, 354)
         };
         card.Controls.Add(fontHint);
 
@@ -283,6 +293,7 @@ internal sealed class SettingsDialog : Form
     }
 
     private RoundedPanel BuildGeneral(
+        out SegmentedControl language,
         out SegmentedControl startupPage,
         out ModernCheckBox checkUpdates,
         out ModernCheckBox recordMoves,
@@ -304,27 +315,14 @@ internal sealed class SettingsDialog : Form
         };
         card.Controls.Add(languageLabel);
 
-        var languageValue = new Label
+        language = new SegmentedControl
         {
-            Text = "简体中文",
-            Font = Theme.BodyBold,
-            ForeColor = Theme.Text,
-            BackColor = Color.Transparent,
-            AutoSize = true,
-            Location = new Point(142, 74)
+            Items = new[] { "简体中文", "English" },
+            AccentColor = Theme.Blue,
+            Size = new Size(240, 36),
+            Location = new Point(104, 64)
         };
-        card.Controls.Add(languageValue);
-
-        var languageHint = new Label
-        {
-            Text = "English 本地化仍在准备中",
-            Font = Theme.BodySmall,
-            ForeColor = Theme.MutedDim,
-            BackColor = Color.Transparent,
-            AutoSize = true,
-            Location = new Point(272, 76)
-        };
-        card.Controls.Add(languageHint);
+        card.Controls.Add(language);
 
         var startupLabel = new Label
         {
@@ -435,7 +433,9 @@ internal sealed class SettingsDialog : Form
 
         var version = new Label
         {
-            Text = $"当前版本 v{UpdateChecker.CurrentVersion}",
+            Text = L.T(
+                $"当前版本 v{UpdateChecker.CurrentVersion}",
+                $"Version v{UpdateChecker.CurrentVersion}"),
             Font = Theme.Body,
             ForeColor = Theme.TextSoft,
             BackColor = Color.Transparent,
@@ -558,7 +558,7 @@ internal sealed class SettingsDialog : Form
         _checkUpdateButton.Enabled = false;
         _releaseButton.Enabled = false;
         _updateStatus.ForeColor = Theme.Muted;
-        _updateStatus.Text = "正在检查…";
+        _updateStatus.Text = L.T("正在检查…", "Checking…");
 
         try
         {
@@ -571,29 +571,33 @@ internal sealed class SettingsDialog : Form
             if (result.Error != null)
             {
                 _updateStatus.ForeColor = Theme.Amber;
-                _updateStatus.Text = "检查失败：" + result.Error;
+                _updateStatus.Text = L.T("检查失败：", "Check failed: ") + result.Error;
             }
             else if (result.HasUpdate)
             {
                 _updateStatus.ForeColor = Theme.Green;
-                _updateStatus.Text = $"发现新版本 v{result.LatestVersion}";
+                _updateStatus.Text = L.T(
+                    $"发现新版本 v{result.LatestVersion}",
+                    $"New version v{result.LatestVersion} available");
             }
             else
             {
                 _updateStatus.ForeColor = Theme.Muted;
-                _updateStatus.Text = $"已是最新版本 v{result.CurrentVersion}";
+                _updateStatus.Text = L.T(
+                    $"已是最新版本 v{result.CurrentVersion}",
+                    $"Up to date: v{result.CurrentVersion}");
             }
 
             _releaseButton.Enabled = true;
         }
         catch (OperationCanceledException)
         {
-            _updateStatus.Text = "检查已取消";
+            _updateStatus.Text = L.T("检查已取消", "Check cancelled");
         }
         catch (Exception ex)
         {
             _updateStatus.ForeColor = Theme.Amber;
-            _updateStatus.Text = "检查失败：" + ex.Message;
+            _updateStatus.Text = L.T("检查失败：", "Check failed: ") + ex.Message;
             _releaseButton.Enabled = true;
         }
         finally
@@ -671,7 +675,7 @@ internal sealed class SettingsDialog : Form
             var swatchText = Theme.Contrast(Palette.Bg);
             TextRenderer.DrawText(
                 e.Graphics,
-                Palette.Name,
+                L.S(Palette.Name),
                 Font,
                 new Rectangle(34, 0, Width - 46, Height),
                 swatchText,

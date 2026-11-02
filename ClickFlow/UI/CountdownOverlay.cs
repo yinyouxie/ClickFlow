@@ -181,7 +181,7 @@ internal sealed class CountdownOverlay : Form
 
         TextRenderer.DrawText(
             e.Graphics,
-            "按 Esc 取消",
+            L.T("按 Esc 取消", "Press Esc to cancel"),
             Theme.BodySmall,
             new Rectangle(0, 170, Width, 22),
             Theme.MutedDim,

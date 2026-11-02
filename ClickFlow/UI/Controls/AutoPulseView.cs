@@ -8,9 +8,9 @@ internal class AutoPulseView : Control
     private long _count;
     private bool _running;
     private float _pulsePhase;
-    private string _status = "准备就绪";
-    private string _detail = "按 F4 开始连点，F3 随时停止";
-    private string _position = "当前位置";
+    private string _status = L.T("准备就绪", "Ready");
+    private string _detail = L.T("按 F4 开始连点，F3 随时停止", "F4 starts; F3 stops");
+    private string _position = L.T("当前位置", "Current position");
 
     public long Count
     {
@@ -121,7 +121,7 @@ internal class AutoPulseView : Control
 
         TextRenderer.DrawText(
             e.Graphics,
-            "次点击",
+            L.T("次点击", "clicks"),
             Theme.Body,
             new Rectangle((int)circle.Left, (int)(circle.Top + baseRadius + 28), (int)circle.Width, 24),
             Theme.Muted,

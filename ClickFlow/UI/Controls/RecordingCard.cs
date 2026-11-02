@@ -203,7 +203,9 @@ internal sealed class RecordingCard : Control
             TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis |
             TextFormatFlags.NoPadding);
 
-        var meta = $"{Entry.CreatedLocal:MM-dd HH:mm:ss}  ·  {RecordingEntry.FormatDuration(Entry.DurationMs)}  ·  {Entry.ActionCount} 个操作";
+        var meta = L.T(
+            $"{Entry.CreatedLocal:MM-dd HH:mm:ss}  ·  {RecordingEntry.FormatDuration(Entry.DurationMs)}  ·  {Entry.ActionCount} 个操作",
+            $"{Entry.CreatedLocal:MM-dd HH:mm:ss}  ·  {RecordingEntry.FormatDuration(Entry.DurationMs)}  ·  {Entry.ActionCount} actions");
         TextRenderer.DrawText(
             g,
             meta,
@@ -274,7 +276,7 @@ internal sealed class RecordingCard : Control
         {
             TextRenderer.DrawText(
                 g,
-                "无法读取录制文件：" + _loadError,
+                L.T("无法读取录制文件：", "Cannot read recording: ") + _loadError,
                 Theme.BodySmall,
                 new Rectangle(S(24), y + S(8), Width - S(48), S(22)),
                 Theme.Accent,
@@ -288,7 +290,7 @@ internal sealed class RecordingCard : Control
         {
             TextRenderer.DrawText(
                 g,
-                "这条录制只有鼠标移动轨迹",
+                L.T("这条录制只有鼠标移动轨迹", "This recording only contains mouse movement"),
                 Theme.BodySmall,
                 new Rectangle(S(24), y + S(8), Width - S(48), S(22)),
                 Theme.Muted,
@@ -309,7 +311,9 @@ internal sealed class RecordingCard : Control
         {
             TextRenderer.DrawText(
                 g,
-                $"还有 {_actions.Count - MaxPreviewActions} 个操作未展开显示",
+                L.T(
+                    $"还有 {_actions.Count - MaxPreviewActions} 个操作未展开显示",
+                    $"{_actions.Count - MaxPreviewActions} more actions not shown"),
                 Theme.BodySmall,
                 new Rectangle(S(24), y + S(4), Width - S(48), S(20)),
                 Theme.MutedDim,

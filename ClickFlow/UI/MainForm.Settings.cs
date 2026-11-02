@@ -31,7 +31,7 @@ internal sealed partial class MainForm
         _settings.CheckUpdatesOnStartup = dialog.CheckUpdatesOnStartup;
         _settings.RecordMouseMoves = dialog.RecordMouseMoves;
         _settings.RestoreCursor = dialog.RestoreCursor;
-        _settings.Language = "zh-CN";
+        _settings.Language = dialog.Language;
         MacroStore.SaveSettings(_settings);
         ApplySettingsToUi();
 
@@ -47,16 +47,18 @@ internal sealed partial class MainForm
         {
             ApplySettingsToUi();
             RefreshShell();
-            ShowToast("设置已保存", 2);
+            ShowToast(L.T("设置已保存", "Settings saved"), 2);
         }
 
         if (restartRequired)
         {
             MessageDialog.Show(
                 this,
-                "需要重启",
-                "字号设置已保存。\n\n请关闭轻录后重新打开，新字号才会生效。",
-                "知道了",
+                L.T("需要重启", "Restart required"),
+                L.T(
+                    "语言或字号设置已保存。\n\n请关闭轻录后重新打开，新设置才会生效。",
+                    "Language or font size was saved.\n\nPlease close and reopen ClickFlow to apply it."),
+                L.T("知道了", "OK"),
                 null,
                 danger: false);
         }

@@ -41,7 +41,9 @@ internal sealed partial class MainForm
             }
 
             _settings.PlaybackSpeed = _speedStepper.Value / 100.0;
-            ShowToast($"回放速度：{_settings.PlaybackSpeed:0.##}×", 1.6);
+            ShowToast(L.T(
+                $"回放速度：{_settings.PlaybackSpeed:0.##}×",
+                $"Playback speed: {_settings.PlaybackSpeed:0.##}×"), 1.6);
         };
         _delaySeg.SelectedIndexChanged += (_, _) =>
         {
@@ -108,16 +110,16 @@ internal sealed partial class MainForm
         DragEnter += OnFileDragEnter;
         DragDrop += OnFileDragDrop;
 
-        _toolTip.SetToolTip(_helpButton, "使用帮助 (Ctrl+H)");
-        _toolTip.SetToolTip(_settingsButton, "设置");
-        _toolTip.SetToolTip(_importButton, "把外部 .cfmacro 导入录制历史 (Ctrl+O)");
-        _toolTip.SetToolTip(_folderButton, "打开录制文件所在文件夹");
-        _toolTip.SetToolTip(_captureButton, "读取当前鼠标坐标；也可以在任意窗口按 F5");
-        _toolTip.SetToolTip(_speedStepper, "每次 ±0.25×；也可以点击数字直接输入");
-        _toolTip.SetToolTip(_loopStepper, "点击数字直接输入循环次数，范围 1–999");
-        _toolTip.SetToolTip(_recordCard, "开始或停止录制 (F1)");
-        _toolTip.SetToolTip(_playButton, "回放选中的录制 (F2)");
-        _toolTip.SetToolTip(_stopButton, "立即停止录制、回放或连点 (F3)");
+        _toolTip.SetToolTip(_helpButton, L.T("使用帮助 (Ctrl+H)", "Help (Ctrl+H)"));
+        _toolTip.SetToolTip(_settingsButton, L.T("设置", "Settings"));
+        _toolTip.SetToolTip(_importButton, L.T("把外部 .cfmacro 导入录制历史 (Ctrl+O)", "Import an external .cfmacro (Ctrl+O)"));
+        _toolTip.SetToolTip(_folderButton, L.T("打开录制文件所在文件夹", "Open the recordings folder"));
+        _toolTip.SetToolTip(_captureButton, L.T("读取当前鼠标坐标；也可以在任意窗口按 F5", "Read the current cursor position; F5 works anywhere"));
+        _toolTip.SetToolTip(_speedStepper, L.T("每次 ±0.25×；也可以点击数字直接输入", "Steps by 0.25×; click the number to type"));
+        _toolTip.SetToolTip(_loopStepper, L.T("点击数字直接输入循环次数，范围 1–999", "Click the number to type loops (1–999)"));
+        _toolTip.SetToolTip(_recordCard, L.T("开始或停止录制 (F1)", "Start or stop recording (F1)"));
+        _toolTip.SetToolTip(_playButton, L.T("回放选中的录制 (F2)", "Replay the selected recording (F2)"));
+        _toolTip.SetToolTip(_stopButton, L.T("立即停止录制、回放或连点 (F3)", "Stop recording, playback or auto click (F3)"));
     }
 
     private void UpdateHotkeyLabels()
@@ -133,17 +135,22 @@ internal sealed partial class MainForm
         _autoStartButton.Hotkey = AutoHotkeyAvailable ? AutoKeyLabel : string.Empty;
         _autoStopButton.Hotkey = StopHotkeyAvailable ? StopKeyLabel : string.Empty;
 
-        _stopHintLabel.Text = StopHotkeyAvailable ? $"{StopKeyLabel} 急停" : "急停";
+        _stopHintLabel.Text = StopHotkeyAvailable
+            ? L.T($"{StopKeyLabel} 急停", $"{StopKeyLabel} stop")
+            : L.T("急停", "Stop");
         _captureHintLabel.Text = _hotkeyCapture || _hotkeyCaptureAlt
-            ? $"{CaptureKeyLabel} 取坐标"
-            : "取坐标";
-        _autoTipLabel.Text =
+            ? L.T($"{CaptureKeyLabel} 取坐标", $"{CaptureKeyLabel} pick")
+            : L.T("取坐标", "Pick");
+        _autoTipLabel.Text = L.T(
             $"{AutoKeyLabel} 连点  ·  {CaptureKeyLabel} 取坐标  ·  {StopKeyLabel} 急停\n" +
-            "次数 0 = 无限，直到手动停止。";
-        _autoFooterHint.Text =
-            $"开始前短暂准备，让目标窗口获得焦点；{StopKeyLabel} 可随时停止。";
-        _historyEmpty.Text =
-            $"还没有录制记录\n\n按 {RecordKeyLabel} 开始录制，停止后会自动保存在这里";
+            "次数 0 = 无限，直到手动停止。",
+            $"{AutoKeyLabel} click · {CaptureKeyLabel} pick · {StopKeyLabel} stop\nCount 0 = unlimited until stopped.");
+        _autoFooterHint.Text = L.T(
+            $"开始前短暂准备，让目标窗口获得焦点；{StopKeyLabel} 可随时停止。",
+            $"Brief countdown to focus the target; {StopKeyLabel} stops at any time.");
+        _historyEmpty.Text = L.T(
+            $"还没有录制记录\n\n按 {RecordKeyLabel} 开始录制，停止后会自动保存在这里",
+            $"No recordings yet\n\nPress {RecordKeyLabel} to record; it will be saved here.");
 
         if (_stopHintLabel.Parent != null)
         {
@@ -155,10 +162,10 @@ internal sealed partial class MainForm
             _captureHintLabel.Left = _captureHintLabel.Parent.ClientSize.Width - _captureHintLabel.Width;
         }
 
-        _toolTip.SetToolTip(_recordCard, $"开始或停止录制 ({RecordKeyLabel})");
-        _toolTip.SetToolTip(_playButton, $"回放选中的录制 ({PlayKeyLabel})");
-        _toolTip.SetToolTip(_stopButton, $"立即停止录制、回放或连点 ({StopKeyLabel})");
-        _toolTip.SetToolTip(_captureButton, $"读取当前鼠标坐标；也可以在任意窗口按 {CaptureKeyLabel}");
+        _toolTip.SetToolTip(_recordCard, L.T($"开始或停止录制 ({RecordKeyLabel})", $"Start or stop recording ({RecordKeyLabel})"));
+        _toolTip.SetToolTip(_playButton, L.T($"回放选中的录制 ({PlayKeyLabel})", $"Replay the selected recording ({PlayKeyLabel})"));
+        _toolTip.SetToolTip(_stopButton, L.T($"立即停止录制、回放或连点 ({StopKeyLabel})", $"Stop recording, playback or auto click ({StopKeyLabel})"));
+        _toolTip.SetToolTip(_captureButton, L.T($"读取当前鼠标坐标；也可以在任意窗口按 {CaptureKeyLabel}", $"Read the cursor position; {CaptureKeyLabel} works anywhere"));
 
         UpdateFooter();
     }
@@ -186,7 +193,7 @@ internal sealed partial class MainForm
             _suppressUi = true;
             _nav.SelectedIndex = (int)_mode;
             _suppressUi = false;
-            ShowToast("请先停止正在进行的操作", 2);
+            ShowToast(L.T("请先停止正在进行的操作", "Stop the running action first"), 2);
             return;
         }
 
@@ -197,7 +204,7 @@ internal sealed partial class MainForm
     {
         if (_state != RunState.Idle)
         {
-            ShowToast("请先停止正在进行的操作", 2);
+            ShowToast(L.T("请先停止正在进行的操作", "Stop the running action first"), 2);
             return;
         }
 
@@ -231,7 +238,7 @@ internal sealed partial class MainForm
 
         if (_state != RunState.Idle)
         {
-            ShowToast("请先停止当前操作", 2);
+            ShowToast(L.T("请先停止当前操作", "Stop the current action first"), 2);
             return;
         }
 
@@ -248,7 +255,7 @@ internal sealed partial class MainForm
             var proceed = await CountdownOverlay.RunAsync(
                 this,
                 _settings.StartDelaySeconds,
-                "准备录制",
+                L.T("准备录制", "Preparing to record"),
                 Theme.Accent,
                 _cts.Token);
 
@@ -269,9 +276,11 @@ internal sealed partial class MainForm
                 RestoreAfterRun();
                 MessageDialog.Show(
                     this,
-                    "无法开始录制",
-                    error + "\n\n请确认系统允许轻录监听全局输入。",
-                    "知道了",
+                    L.T("无法开始录制", "Cannot start recording"),
+                    L.T(
+                        error + "\n\n请确认系统允许轻录监听全局输入。",
+                        error + "\n\nMake sure the system allows ClickFlow to monitor global input."),
+                    L.T("知道了", "OK"),
                     danger: true);
                 return;
             }
@@ -279,11 +288,11 @@ internal sealed partial class MainForm
             SetState(RunState.Recording);
             _cts.Dispose();
             _cts = null;
-            ShowToast($"录制已开始 · 按 {RecordKeyLabel} 停止", 2.5);
+            ShowToast(L.T($"录制已开始 · 按 {RecordKeyLabel} 停止", $"Recording · press {RecordKeyLabel} to stop"), 2.5);
         }
         catch (OperationCanceledException)
         {
-            ShowToast("已取消录制", 2);
+            ShowToast(L.T("已取消录制", "Recording cancelled"), 2);
         }
         catch (Exception ex)
         {
@@ -322,7 +331,7 @@ internal sealed partial class MainForm
                 }
                 catch (Exception archiveError)
                 {
-                    ShowToast("录制完成，但保存到历史失败：" + archiveError.Message, 6);
+                    ShowToast(L.T("录制完成，但保存到历史失败：", "Recorded, but saving to History failed: ") + archiveError.Message, 6);
                 }
             }
 
@@ -331,14 +340,14 @@ internal sealed partial class MainForm
 
             if (events.Count == 0)
             {
-                ShowToast("没有录到操作，请再试一次", 3.5);
+                ShowToast(L.T("没有录到操作，请再试一次", "No input captured; try again"), 3.5);
             }
             else
             {
                 RefreshHistory(entry?.Id);
                 SelectEntry(entry);
                 ShowToast(
-                    $"录制已保存 · {entry?.ActionCount ?? 0} 个操作 · " +
+                    L.T($"录制已保存 · {entry?.ActionCount ?? 0} 个操作 · ", $"Saved · {entry?.ActionCount ?? 0} actions · ") +
                     $"{Theme.FormatDuration(_document.DurationMs)}",
                     4);
             }
@@ -364,13 +373,15 @@ internal sealed partial class MainForm
 
         if (_state != RunState.Idle)
         {
-            ShowToast("请先停止当前操作", 2);
+            ShowToast(L.T("请先停止当前操作", "Stop the current action first"), 2);
             return;
         }
 
         if (_selectedEntry == null)
         {
-            ShowToast($"请先在右侧选中一条录制，再按 {PlayKeyLabel} 回放", 3);
+            ShowToast(L.T(
+                $"请先在右侧选中一条录制，再按 {PlayKeyLabel} 回放",
+                $"Select a recording on the right, then press {PlayKeyLabel} to replay"), 3);
             return;
         }
 
@@ -386,13 +397,18 @@ internal sealed partial class MainForm
         }
         catch (Exception ex)
         {
-            MessageDialog.Show(this, "无法读取录制", ex.Message, "知道了", danger: true);
+            MessageDialog.Show(
+                this,
+                L.T("无法读取录制", "Cannot read recording"),
+                ex.Message,
+                L.T("知道了", "OK"),
+                danger: true);
             return;
         }
 
         if (document.Events.Count == 0)
         {
-            ShowToast("这条录制没有可回放的操作", 2.5);
+            ShowToast(L.T("这条录制没有可回放的操作", "This recording has no replayable actions"), 2.5);
             return;
         }
 
@@ -406,7 +422,7 @@ internal sealed partial class MainForm
             var proceed = await CountdownOverlay.RunAsync(
                 this,
                 _settings.StartDelaySeconds,
-                "准备回放",
+                L.T("准备回放", "Preparing playback"),
                 Theme.Green,
                 _cts.Token);
             if (!proceed)
@@ -425,8 +441,9 @@ internal sealed partial class MainForm
 
             if (!StartPlaybackInputGuard(out var guardError))
             {
-                throw new InvalidOperationException(
-                    guardError + "\n\n为避免回放被手动输入干扰，本次回放已取消。");
+                throw new InvalidOperationException(L.T(
+                    guardError + "\n\n为避免回放被手动输入干扰，本次回放已取消。",
+                    guardError + "\n\nPlayback was cancelled to avoid interference from manual input."));
             }
 
             var options = new PlaybackOptions
@@ -438,18 +455,22 @@ internal sealed partial class MainForm
             };
             var progress = new Progress<PlaybackProgress>(OnPlaybackProgress);
             _operationTask = _player.PlayAsync(_document, options, progress, _cts.Token);
-            ShowToast($"回放中 · 输入已锁定，按 {StopKeyLabel} 或点击上方急停", 2.5);
+            ShowToast(L.T(
+                $"回放中 · 输入已锁定，按 {StopKeyLabel} 或点击上方急停",
+                $"Playing · input locked · press {StopKeyLabel} or click Stop above"), 2.5);
             await _operationTask;
 
             if (_state == RunState.Playing)
             {
-                ShowToast($"回放完成 · 共 {_playbackLoops} 轮", 3.5);
+                ShowToast(L.T(
+                    $"回放完成 · 共 {_playbackLoops} 轮",
+                    $"Playback complete · {_playbackLoops} loops"), 3.5);
             }
         }
         catch (OperationCanceledException)
         {
             _inputGuard.Stop();
-            ShowToast("回放已停止", 2.5);
+            ShowToast(L.T("回放已停止", "Playback stopped"), 2.5);
         }
         catch (Exception ex)
         {
@@ -510,7 +531,7 @@ internal sealed partial class MainForm
 
         if (_state != RunState.Idle)
         {
-            ShowToast("请先停止当前操作", 2);
+            ShowToast(L.T("请先停止当前操作", "Stop the current action first"), 2);
             return;
         }
 
@@ -525,7 +546,9 @@ internal sealed partial class MainForm
 
             if (foreground && options.UseCurrentPosition && !canMinimize)
             {
-                ShowToast($"请先切换到目标窗口再按 {AutoKeyLabel}", 4);
+                ShowToast(L.T(
+                    $"请先切换到目标窗口再按 {AutoKeyLabel}",
+                    $"Switch to the target window, then press {AutoKeyLabel}"), 4);
                 return;
             }
 
@@ -535,7 +558,9 @@ internal sealed partial class MainForm
                 WindowState = FormWindowState.Minimized;
             }
 
-            ShowToast($"连点准备中 · 按 {StopKeyLabel} 取消", 2);
+            ShowToast(L.T(
+                $"连点准备中 · 按 {StopKeyLabel} 取消",
+                $"Preparing auto click · press {StopKeyLabel} to cancel"), 2);
             await Task.Delay(foreground ? 700 : 220, _cts.Token);
             _cts.Token.ThrowIfCancellationRequested();
 
@@ -548,12 +573,16 @@ internal sealed partial class MainForm
             if (_state == RunState.AutoClicking)
             {
                 var count = _autoClicker.Count;
-                ShowToast(count > 0 ? $"连点完成 · {count:N0} 次" : "连点已结束", 3);
+                ShowToast(
+                    count > 0
+                        ? L.T($"连点完成 · {count:N0} 次", $"Auto click complete · {count:N0}")
+                        : L.T("连点已结束", "Auto click finished"),
+                    3);
             }
         }
         catch (OperationCanceledException)
         {
-            ShowToast("连点已停止", 2.5);
+            ShowToast(L.T("连点已停止", "Auto click stopped"), 2.5);
         }
         catch (Exception ex)
         {
@@ -603,7 +632,7 @@ internal sealed partial class MainForm
                 StopRecording();
                 return;
             case RunState.Idle:
-                ShowToast("当前没有进行中的操作", 1.6);
+                ShowToast(L.T("当前没有进行中的操作", "Nothing is running"), 1.6);
                 return;
             case RunState.Preparing:
             case RunState.Playing:
@@ -611,7 +640,7 @@ internal sealed partial class MainForm
                 if (_cts != null)
                 {
                     _cts.Cancel();
-                    ShowToast("正在停止…", 1.8);
+                    ShowToast(L.T("正在停止…", "Stopping…"), 1.8);
                 }
                 else
                 {
@@ -627,7 +656,7 @@ internal sealed partial class MainForm
     {
         if (_state != RunState.Idle)
         {
-            ShowToast("请先停止当前操作", 2);
+            ShowToast(L.T("请先停止当前操作", "Stop the current action first"), 2);
             return;
         }
 
@@ -649,7 +678,9 @@ internal sealed partial class MainForm
         }
 
         RefreshShell();
-        ShowToast($"已捕获坐标 ({_autoX.Value}, {_autoY.Value})", 2.5);
+        ShowToast(L.T(
+            $"已捕获坐标 ({_autoX.Value}, {_autoY.Value})",
+            $"Captured position ({_autoX.Value}, {_autoY.Value})"), 2.5);
     }
 
     private async Task PrepareForRunAsync(
@@ -664,7 +695,9 @@ internal sealed partial class MainForm
 
         if (!CanMinimizeSafely(intended))
         {
-            ShowToast("全局停止快捷键被占用，本次不会自动最小化", 3);
+            ShowToast(L.T(
+                "全局停止快捷键被占用，本次不会自动最小化",
+                "Global stop hotkey is occupied; the window will not minimize"), 3);
             return;
         }
 
@@ -717,14 +750,16 @@ internal sealed partial class MainForm
     {
         var screen = SystemInformation.VirtualScreen;
         var name = string.IsNullOrWhiteSpace(_targetTitle)
-            ? $"录制 {DateTime.Now:MM-dd HH:mm}"
+            ? L.T(
+                $"录制 {DateTime.Now:MM-dd HH:mm}",
+                $"Recording {DateTime.Now:MM-dd HH:mm}")
             : _targetTitle;
 
         return new MacroDocument
         {
             Name = name,
             CreatedUtc = DateTime.UtcNow,
-            AppVersion = "1.1.0",
+            AppVersion = "1.2.0",
             ScreenWidth = screen.Width,
             ScreenHeight = screen.Height,
             Events = events
@@ -752,6 +787,7 @@ internal sealed partial class MainForm
             var title = builder.ToString().Trim();
             if (title.Length == 0 ||
                 title.Equals("轻录 ClickFlow", StringComparison.OrdinalIgnoreCase) ||
+                title.Equals("ClickFlow", StringComparison.OrdinalIgnoreCase) ||
                 title.Equals("Program Manager", StringComparison.OrdinalIgnoreCase))
             {
                 return string.Empty;
@@ -769,7 +805,7 @@ internal sealed partial class MainForm
     {
         if (_state != RunState.Idle)
         {
-            ShowToast("请先停止当前操作", 2);
+            ShowToast(L.T("请先停止当前操作", "Stop the current action first"), 2);
             return;
         }
 

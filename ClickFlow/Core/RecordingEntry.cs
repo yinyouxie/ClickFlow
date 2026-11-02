@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using ClickFlow.UI;
 
 namespace ClickFlow.Core;
 
@@ -6,7 +7,7 @@ public sealed class RecordingEntry
 {
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
     public string FileName { get; set; } = string.Empty;
-    public string Name { get; set; } = "未命名录制";
+    public string Name { get; set; } = L.T("未命名录制", "Untitled recording");
     public DateTime CreatedUtc { get; set; } = DateTime.UtcNow;
     public long DurationMs { get; set; }
     public int ActionCount { get; set; }
@@ -24,12 +25,14 @@ public sealed class RecordingEntry
     public DateTime CreatedLocal => CreatedUtc.ToLocalTime();
 
     [JsonIgnore]
-    public string Summary =>
-        $"{FormatDuration(DurationMs)} · {ActionCount} 个操作";
+    public string Summary => L.T(
+        $"{FormatDuration(DurationMs)} · {ActionCount} 个操作",
+        $"{FormatDuration(DurationMs)} · {ActionCount} actions");
 
     [JsonIgnore]
-    public string DetailSummary =>
-        $"点击 {ClickCount} · 拖动 {DragCount} · 滚轮 {ScrollCount} · 按键 {KeyCount}";
+    public string DetailSummary => L.T(
+        $"点击 {ClickCount} · 拖动 {DragCount} · 滚轮 {ScrollCount} · 按键 {KeyCount}",
+        $"Clicks {ClickCount} · Drags {DragCount} · Wheel {ScrollCount} · Keys {KeyCount}");
 
     public static string FormatDuration(long ms)
     {

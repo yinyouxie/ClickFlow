@@ -132,7 +132,7 @@ internal sealed class StatusHud : Form
             Theme.DrawRounded(e.Graphics, stop, 8, Theme.Alpha(Theme.Accent, 100));
             TextRenderer.DrawText(
                 e.Graphics,
-                "停止",
+                L.T("停止", "Stop"),
                 Theme.BodySmall,
                 Rectangle.Round(stop),
                 Theme.AccentSoft,

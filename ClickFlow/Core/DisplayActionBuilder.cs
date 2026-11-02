@@ -1,4 +1,5 @@
 using System.Drawing;
+using ClickFlow.UI;
 
 namespace ClickFlow.Core;
 
@@ -138,8 +139,10 @@ public static class DisplayActionBuilder
                             evt.T,
                             0,
                             DisplayActionKind.Click,
-                            $"{KeyNames.MouseName((MouseButtonKind)evt.Data)}释放",
-                            $"坐标 ({evt.X}, {evt.Y})",
+                            L.T(
+                                $"{KeyNames.MouseName((MouseButtonKind)evt.Data)}释放",
+                                $"{KeyNames.MouseName((MouseButtonKind)evt.Data)} release"),
+                            L.T($"坐标 ({evt.X}, {evt.Y})", $"Position ({evt.X}, {evt.Y})"),
                             1,
                             evt.X,
                             evt.Y));
@@ -151,10 +154,10 @@ public static class DisplayActionBuilder
                 {
                     var horizontal = evt.Horizontal;
                     var direction = evt.Data > 0
-                        ? (horizontal ? "向右" : "向上")
-                        : (horizontal ? "向左" : "向下");
+                        ? L.T(horizontal ? "向右" : "向上", horizontal ? "right" : "up")
+                        : L.T(horizontal ? "向左" : "向下", horizontal ? "left" : "down");
                     var notches = Math.Max(1, Math.Abs(evt.Data) / 120);
-                    var title = $"滚轮{direction}";
+                    var title = L.T($"滚轮{direction}", $"Wheel {direction}");
 
                     if (actions.Count > 0)
                     {
@@ -169,7 +172,9 @@ public static class DisplayActionBuilder
                             actions[^1] = previous with
                             {
                                 DurationMs = evt.T - previous.StartMs,
-                                Detail = $"{evt.X}, {evt.Y} · {(horizontal ? "横向" : "竖向")}",
+                                Detail = L.T(
+                                    $"{evt.X}, {evt.Y} · {(horizontal ? "横向" : "竖向")}",
+                                    $"{evt.X}, {evt.Y} · {(horizontal ? "horizontal" : "vertical")}"),
                                 Count = previous.Count + notches,
                                 X = evt.X,
                                 Y = evt.Y
@@ -183,7 +188,9 @@ public static class DisplayActionBuilder
                         0,
                         DisplayActionKind.Scroll,
                         title,
-                        $"{evt.X}, {evt.Y} · {(horizontal ? "横向" : "竖向")}",
+                        L.T(
+                            $"{evt.X}, {evt.Y} · {(horizontal ? "横向" : "竖向")}",
+                            $"{evt.X}, {evt.Y} · {(horizontal ? "horizontal" : "vertical")}"),
                         notches,
                         evt.X,
                         evt.Y,
@@ -223,7 +230,9 @@ public static class DisplayActionBuilder
                         0,
                         DisplayActionKind.Key,
                         combo,
-                        comboParts.Count > 1 ? "组合键" : "键盘按键");
+                        L.T(
+                            comboParts.Count > 1 ? "组合键" : "键盘按键",
+                            comboParts.Count > 1 ? "Shortcut" : "Key press"));
                     actions.Add(action);
                     pendingKeys[vk] = new PendingKey(action, evt.T);
                     break;
@@ -246,7 +255,7 @@ public static class DisplayActionBuilder
                                 0,
                                 DisplayActionKind.Key,
                                 KeyNames.GetName(vk),
-                                "键盘按键"));
+                                L.T("键盘按键", "Key press")));
                         }
 
                         break;
@@ -262,7 +271,9 @@ public static class DisplayActionBuilder
                             actions[index] = pending.Action with
                             {
                                 DurationMs = duration,
-                                Detail = (isCombo ? "组合键" : "键盘按键") + $" · {duration} ms"
+                                Detail = L.T(
+                                    (isCombo ? "组合键" : "键盘按键") + $" · {duration} ms",
+                                    (isCombo ? "Shortcut" : "Key press") + $" · {duration} ms")
                             };
                         }
 
@@ -290,7 +301,9 @@ public static class DisplayActionBuilder
                     actions[index] = pending.Action with
                     {
                         DurationMs = duration,
-                        Detail = "按键未松开 · 录制结束时仍按住"
+                        Detail = L.T(
+                            "按键未松开 · 录制结束时仍按住",
+                            "Key still held when recording ended")
                     };
                 }
             }
@@ -336,7 +349,9 @@ public static class DisplayActionBuilder
                 mouse.DownAt,
                 duration,
                 DisplayActionKind.Drag,
-                $"{KeyNames.MouseName(mouse.Button)}拖动",
+                L.T(
+                    $"{KeyNames.MouseName(mouse.Button)}拖动",
+                    $"{KeyNames.MouseName(mouse.Button)} drag"),
                 $"({mouse.StartX}, {mouse.StartY}) → ({ex}, {ey}) · {distance}px",
                 1,
                 ex,
@@ -345,14 +360,14 @@ public static class DisplayActionBuilder
         else
         {
             var title = mouse.Button == MouseButtonKind.Left
-                ? "左键单击"
+                ? L.T("左键单击", "Left click")
                 : KeyNames.MouseVerb(mouse.Button);
             actions.Add(new DisplayAction(
                 mouse.DownAt,
                 duration,
                 DisplayActionKind.Click,
                 title,
-                $"坐标 ({ex}, {ey})",
+                L.T($"坐标 ({ex}, {ey})", $"Position ({ex}, {ey})"),
                 1,
                 ex,
                 ey));

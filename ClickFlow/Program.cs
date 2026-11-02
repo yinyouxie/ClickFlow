@@ -15,6 +15,15 @@ internal static class Program
             "1",
             StringComparison.OrdinalIgnoreCase);
 
+        try
+        {
+            L.SetLanguage(MacroStore.LoadSettings().Language);
+        }
+        catch
+        {
+            // Defaults to Chinese if settings cannot be read.
+        }
+
         Mutex? mutex = null;
         var isFirstInstance = true;
         if (!bypassMutex)
@@ -23,8 +32,10 @@ internal static class Program
             if (!isFirstInstance)
             {
                 MessageBox.Show(
-                    "轻录已经在运行了。\n\n请在任务栏中打开它，或按 F1 开始录制。",
-                    "轻录 ClickFlow",
+                    L.T(
+                        "轻录已经在运行了。\n\n请在任务栏中打开它，或按 F1 开始录制。",
+                        "ClickFlow is already running.\n\nOpen it from the taskbar, or press F1 to record."),
+                    L.T("轻录 ClickFlow", "ClickFlow"),
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
                 return;
@@ -36,7 +47,9 @@ internal static class Program
         Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
         Application.ThreadException += (_, e) => CrashReporter.Report(e.Exception);
         AppDomain.CurrentDomain.UnhandledException += (_, e) =>
-            CrashReporter.Report(e.ExceptionObject as Exception ?? new Exception("未知错误"));
+            CrashReporter.Report(
+                e.ExceptionObject as Exception ??
+                new Exception(L.T("未知错误", "Unknown error")));
 
         try
         {
@@ -98,10 +111,14 @@ internal static class CrashReporter
         try
         {
             MessageBox.Show(
-                "轻录遇到了一个意外问题，本次操作已停止。\n\n" +
-                ex.Message +
-                "\n\n错误日志已写入本地 ClickFlow 目录。",
-                "轻录 ClickFlow",
+                L.T(
+                    "轻录遇到了一个意外问题，本次操作已停止。\n\n" +
+                    ex.Message +
+                    "\n\n错误日志已写入本地 ClickFlow 目录。",
+                    "ClickFlow hit an unexpected error and stopped the action.\n\n" +
+                    ex.Message +
+                    "\n\nAn error log was written to the local ClickFlow folder."),
+                L.T("轻录 ClickFlow", "ClickFlow"),
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
         }
