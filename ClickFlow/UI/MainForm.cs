@@ -19,7 +19,7 @@ internal sealed partial class MainForm : Form
     private const int HotkeyCaptureAlt = 0x5A15;
     private const int HotkeyStopF6 = 0x5A16;
 
-    private static readonly double[] SpeedValues = { 0.5, 1.0, 2.0, 4.0 };
+    private static readonly double[] SpeedValues = { 0.25, 0.5, 1.0, 2.0, 4.0 };
     private static readonly int[] DelayValues = { 0, 3, 5 };
     private static readonly TimeSpan ToastDuration = TimeSpan.FromSeconds(4);
 
@@ -54,6 +54,7 @@ internal sealed partial class MainForm : Form
     private bool _minimizedForRun;
     private bool _loaded;
     private bool _closing;
+    private Image? _backdrop;
 
     private bool _hotkeyRecord;
     private bool _hotkeyPlay;
@@ -74,6 +75,7 @@ internal sealed partial class MainForm : Form
         Theme.ApplyFontScale((float)_settings.UiScale);
         Theme.Apply(Theme.Resolve(_settings.ThemeId, _settings.CustomThemeArgb));
         BuildUi();
+        UpdateBackdrop();
         WireEvents();
         ApplySettingsToUi();
 
@@ -128,6 +130,21 @@ internal sealed partial class MainForm : Form
         base.OnHandleCreated(e);
         WindowEffects.ApplyDarkChrome(this);
         RegisterHotkeys();
+    }
+
+    protected override void OnResize(EventArgs e)
+    {
+        base.OnResize(e);
+        UpdateBackdrop();
+    }
+
+    private void UpdateBackdrop()
+    {
+        var next = Theme.CreateBackdrop(ClientSize);
+        var previous = _backdrop;
+        _backdrop = next;
+        BackgroundImage = next;
+        previous?.Dispose();
     }
 
     protected override void OnHandleDestroyed(EventArgs e)

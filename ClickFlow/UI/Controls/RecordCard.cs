@@ -72,8 +72,14 @@ internal class RecordCard : Control
         e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
         var rect = new RectangleF(0, 0, Width, Height);
 
-        var top = _recording ? Theme.Hex("#27151B") : _hovered ? Theme.Hex("#1B1F29") : Theme.Hex("#161A22");
-        var bottom = _recording ? Theme.Hex("#17131A") : Theme.Hex("#11151C");
+        var top = _recording
+            ? Theme.Blend(Theme.Surface, Theme.Accent, 0.12)
+            : _hovered
+                ? Theme.SurfaceHover
+                : Theme.SurfaceRaised;
+        var bottom = _recording
+            ? Theme.Blend(Theme.Bg, Theme.Accent, 0.08)
+            : Theme.Surface;
         using (var gradient = new LinearGradientBrush(rect, top, bottom, 28f))
         {
             Theme.FillRounded(e.Graphics, rect, 16, gradient);
@@ -156,7 +162,7 @@ internal class RecordCard : Control
             13f * chipScale,
             chipWidth,
             chipHeight);
-        Theme.FillRounded(e.Graphics, chip, 7, Theme.Alpha(Theme.Bg, 145));
+        Theme.FillRounded(e.Graphics, chip, 7, Theme.Alpha(Theme.SurfaceHover, 215));
         Theme.DrawRounded(e.Graphics, chip, 7, Theme.Alpha(Theme.Accent, 55));
         TextRenderer.DrawText(
             e.Graphics,

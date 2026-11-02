@@ -11,11 +11,14 @@ internal sealed class SettingsDialog : Form
     private readonly SegmentedControl _fontScale;
     private readonly SegmentedControl _startupPage;
     private readonly ModernCheckBox _checkUpdates;
+    private readonly ModernCheckBox _recordMovesSetting;
+    private readonly ModernCheckBox _restoreCursorSetting;
     private readonly Label _updateStatus;
     private readonly FlatButton _checkUpdateButton;
     private readonly FlatButton _releaseButton;
     private readonly Panel _content;
     private ThemePalette _selectedPalette;
+    private Image? _backdrop;
 
     public SettingsDialog(AppSettings settings)
     {
@@ -30,6 +33,7 @@ internal sealed class SettingsDialog : Form
         MinimizeBox = false;
         ShowInTaskbar = false;
         BackColor = Theme.Bg;
+        BackgroundImageLayout = ImageLayout.Stretch;
         AutoScaleMode = AutoScaleMode.Dpi;
         AutoScaleDimensions = new SizeF(96F, 96F);
         ClientSize = new Size(840, 700);
@@ -113,7 +117,11 @@ internal sealed class SettingsDialog : Form
         content.Resize += (_, _) => flow.Width = Math.Max(400, content.ClientSize.Width - 30);
 
         var appearance = BuildAppearance(out _fontScale);
-        var general = BuildGeneral(out _startupPage, out _checkUpdates);
+        var general = BuildGeneral(
+            out _startupPage,
+            out _checkUpdates,
+            out _recordMovesSetting,
+            out _restoreCursorSetting);
         var data = BuildData();
         var about = BuildAbout(
             out _updateStatus,
@@ -157,6 +165,10 @@ internal sealed class SettingsDialog : Form
 
     public bool CheckUpdatesOnStartup => _checkUpdates.Checked;
 
+    public bool RecordMouseMoves => _recordMovesSetting.Checked;
+
+    public bool RestoreCursor => _restoreCursorSetting.Checked;
+
     public bool RestartRequired =>
         Math.Abs(UiScale - Math.Clamp(_settings.UiScale, 0.9, 1.1)) > 0.001;
 
@@ -171,19 +183,42 @@ internal sealed class SettingsDialog : Form
         base.OnShown(e);
         ActiveControl = null;
         _content.AutoScrollPosition = Point.Empty;
+        UpdateBackdrop();
+    }
+
+    protected override void OnResize(EventArgs e)
+    {
+        base.OnResize(e);
+        UpdateBackdrop();
+    }
+
+    protected override void OnFormClosed(FormClosedEventArgs e)
+    {
+        _backdrop?.Dispose();
+        _backdrop = null;
+        base.OnFormClosed(e);
+    }
+
+    private void UpdateBackdrop()
+    {
+        var next = Theme.CreateBackdrop(ClientSize);
+        var previous = _backdrop;
+        _backdrop = next;
+        BackgroundImage = next;
+        previous?.Dispose();
     }
 
     private RoundedPanel BuildAppearance(out SegmentedControl fontScale)
     {
         var card = SectionCard(
             "外观",
-            "选择背景配色和界面字号。字号会在重启轻录后完全生效。",
-            340);
+            "选择背景配色和界面字号。支持纯白、浅色和渐变主题。",
+            430);
 
         var swatchFlow = new FlowLayoutPanel
         {
             Location = new Point(18, 74),
-            Size = new Size(760, 112),
+            Size = new Size(760, 184),
             BackColor = Color.Transparent,
             WrapContents = true,
             AutoScroll = false,
@@ -208,7 +243,7 @@ internal sealed class SettingsDialog : Form
             Text = "自定义颜色…",
             Style = FlatButtonStyle.Ghost,
             Size = new Size(146, 34),
-            Location = new Point(18, 196)
+            Location = new Point(18, 270)
         };
         custom.Click += (_, _) => ChooseCustomColor();
         card.Controls.Add(custom);
@@ -220,7 +255,7 @@ internal sealed class SettingsDialog : Form
             ForeColor = Theme.TextSoft,
             BackColor = Color.Transparent,
             AutoSize = true,
-            Location = new Point(18, 266)
+            Location = new Point(18, 338)
         };
         card.Controls.Add(fontLabel);
 
@@ -229,7 +264,7 @@ internal sealed class SettingsDialog : Form
             Items = new[] { "小", "标准", "大" },
             AccentColor = Theme.Blue,
             Size = new Size(224, 36),
-            Location = new Point(104, 254)
+            Location = new Point(104, 326)
         };
         card.Controls.Add(fontScale);
 
@@ -240,7 +275,7 @@ internal sealed class SettingsDialog : Form
             ForeColor = Theme.MutedDim,
             BackColor = Color.Transparent,
             AutoSize = true,
-            Location = new Point(344, 264)
+            Location = new Point(344, 336)
         };
         card.Controls.Add(fontHint);
 
@@ -249,12 +284,14 @@ internal sealed class SettingsDialog : Form
 
     private RoundedPanel BuildGeneral(
         out SegmentedControl startupPage,
-        out ModernCheckBox checkUpdates)
+        out ModernCheckBox checkUpdates,
+        out ModernCheckBox recordMoves,
+        out ModernCheckBox restoreCursor)
     {
         var card = SectionCard(
             "通用",
-            "启动时打开哪个页面，以及是否自动检查新版本。",
-            258);
+            "启动时打开哪个页面，以及录制和回放时的默认行为。",
+            330);
 
         var languageLabel = new Label
         {
@@ -318,6 +355,26 @@ internal sealed class SettingsDialog : Form
             Checked = _settings.CheckUpdatesOnStartup
         };
         card.Controls.Add(checkUpdates);
+
+        recordMoves = new ModernCheckBox
+        {
+            Text = "录制鼠标移动轨迹",
+            Size = new Size(260, 26),
+            Location = new Point(18, 214),
+            AccentColor = Theme.Green,
+            Checked = _settings.RecordMouseMoves
+        };
+        card.Controls.Add(recordMoves);
+
+        restoreCursor = new ModernCheckBox
+        {
+            Text = "回放后恢复鼠标位置",
+            Size = new Size(260, 26),
+            Location = new Point(18, 254),
+            AccentColor = Theme.Green,
+            Checked = _settings.RestoreCursor
+        };
+        card.Controls.Add(restoreCursor);
 
         return card;
     }
@@ -611,12 +668,13 @@ internal sealed class SettingsDialog : Form
                 e.Graphics.FillEllipse(swatch, 12, Height / 2f - 7, 14, 14);
             }
 
+            var swatchText = Theme.Contrast(Palette.Bg);
             TextRenderer.DrawText(
                 e.Graphics,
                 Palette.Name,
                 Font,
                 new Rectangle(34, 0, Width - 46, Height),
-                Theme.Text,
+                swatchText,
                 TextFormatFlags.Left | TextFormatFlags.VerticalCenter |
                 TextFormatFlags.SingleLine | TextFormatFlags.NoPadding);
 
@@ -626,7 +684,7 @@ internal sealed class SettingsDialog : Form
                     e.Graphics,
                     Glyph.Check,
                     new RectangleF(Width - 24, Height / 2f - 7, 14, 14),
-                    Theme.Blue,
+                    swatchText,
                     2f);
             }
         }

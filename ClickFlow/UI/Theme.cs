@@ -37,7 +37,15 @@ internal sealed record ThemePalette(
     Color SurfaceHover,
     Color Field,
     Color Border,
-    Color BorderSoft);
+    Color BorderSoft,
+    Color? GradientEnd = null)
+{
+    public bool HasGradient =>
+        GradientEnd.HasValue && GradientEnd.Value.ToArgb() != Bg.ToArgb();
+
+    public bool IsLight =>
+        (0.299 * Bg.R + 0.587 * Bg.G + 0.114 * Bg.B) / 255.0 > 0.58;
+}
 
 internal static class Theme
 {
@@ -58,22 +66,43 @@ internal static class Theme
         new ThemePalette("wine", "酒红", Hex("#160C11"), Hex("#201219"), Hex("#2A1821"), Hex("#35202B"), Hex("#10080C"), Hex("#432A36"), Hex("#2C1B24")),
         new ThemePalette("amber", "暖褐", Hex("#141009"), Hex("#1E1810"), Hex("#292116"), Hex("#352A1C"), Hex("#0F0C07"), Hex("#453824"), Hex("#2B2216")),
         new ThemePalette("violet", "紫夜", Hex("#100D18"), Hex("#181324"), Hex("#211A30"), Hex("#2A223D"), Hex("#0B0912"), Hex("#382C4D"), Hex("#241C33")),
-        new ThemePalette("ocean", "深海", Hex("#07151B"), Hex("#0D2028"), Hex("#142A34"), Hex("#1B3643"), Hex("#050F13"), Hex("#254251"), Hex("#142A33"))
+        new ThemePalette("ocean", "深海", Hex("#07151B"), Hex("#0D2028"), Hex("#142A34"), Hex("#1B3643"), Hex("#050F13"), Hex("#254251"), Hex("#142A33")),
+        new ThemePalette("white", "纯白", Hex("#FFFFFF"), Hex("#FFFFFF"), Hex("#F7F8FA"), Hex("#EEF2F7"), Hex("#F7F9FC"), Hex("#D8DEE7"), Hex("#E7EBF0")),
+        new ThemePalette("ivory", "暖白", Hex("#FAF7F2"), Hex("#FFFDFC"), Hex("#F5EFE7"), Hex("#EDE5DA"), Hex("#F7F2EA"), Hex("#DDD2C4"), Hex("#ECE4D9")),
+        new ThemePalette("aurora", "极光渐变", Hex("#0B1020"), Hex("#121A2E"), Hex("#18223A"), Hex("#1F2C49"), Hex("#0A0F1B"), Hex("#2A3852"), Hex("#1B263C"), Hex("#24163F")),
+        new ThemePalette("dawn", "晨曦渐变", Hex("#FFF5EF"), Hex("#FFFDFC"), Hex("#F7EFF5"), Hex("#EFE6F2"), Hex("#FFF8F3"), Hex("#E1D2D8"), Hex("#F0E6EB"), Hex("#E9F2FF")),
+        new ThemePalette("mint", "薄荷渐变", Hex("#ECFBF5"), Hex("#F7FFFC"), Hex("#E3F5EF"), Hex("#D8EDEA"), Hex("#F2FCF8"), Hex("#C9E2DB"), Hex("#DDF0EA"), Hex("#E7F0FF"))
     };
 
     public static ThemePalette CurrentPalette { get; private set; } = Resolve("deep-space", 0);
 
-    public static readonly Color Text = Hex("#F2F5FA");
-    public static readonly Color TextSoft = Hex("#C5CDDB");
-    public static readonly Color Muted = Hex("#8B96A9");
-    public static readonly Color MutedDim = Hex("#626D7E");
-    public static readonly Color Accent = Hex("#FF6B6B");
-    public static readonly Color AccentSoft = Hex("#FF9A8A");
-    public static readonly Color Green = Hex("#46D9A0");
-    public static readonly Color Blue = Hex("#6FA8FF");
-    public static readonly Color Amber = Hex("#FFC857");
-    public static readonly Color Purple = Hex("#B59BFF");
-    public static readonly Color Cyan = Hex("#58D6E8");
+    public static Color Text { get; private set; } = Hex("#F2F5FA");
+    public static Color TextSoft { get; private set; } = Hex("#C5CDDB");
+    public static Color Muted { get; private set; } = Hex("#8B96A9");
+    public static Color MutedDim { get; private set; } = Hex("#626D7E");
+    public static Color Accent { get; private set; } = Hex("#FF6B6B");
+    public static Color AccentSoft { get; private set; } = Hex("#FF9A8A");
+    public static Color Green { get; private set; } = Hex("#46D9A0");
+    public static Color Blue { get; private set; } = Hex("#6FA8FF");
+    public static Color Amber { get; private set; } = Hex("#FFC857");
+    public static Color Purple { get; private set; } = Hex("#B59BFF");
+    public static Color Cyan { get; private set; } = Hex("#58D6E8");
+
+    public static bool IsLight { get; private set; }
+    public static bool HasGradient => CurrentPalette.HasGradient;
+    public static Color GradientEnd => CurrentPalette.GradientEnd ?? Bg;
+
+    private static Color _previousText = Text;
+    private static Color _previousTextSoft = TextSoft;
+    private static Color _previousMuted = Muted;
+    private static Color _previousMutedDim = MutedDim;
+    private static Color _previousAccent = Accent;
+    private static Color _previousAccentSoft = AccentSoft;
+    private static Color _previousGreen = Green;
+    private static Color _previousBlue = Blue;
+    private static Color _previousAmber = Amber;
+    private static Color _previousPurple = Purple;
+    private static Color _previousCyan = Cyan;
 
     public static Font Body { get; private set; } = new("Microsoft YaHei UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
     public static Font BodySmall { get; private set; } = new("Microsoft YaHei UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
@@ -145,18 +174,39 @@ internal static class Theme
     public static ThemePalette FromBackground(string name, Color background)
     {
         var bg = background;
-        var guard = 0;
-        while (Luminance(bg) > 0.42 && guard++ < 12)
+        var light = Luminance(bg) > 0.58;
+        Color surface;
+        Color raised;
+        Color hover;
+        Color field;
+        Color border;
+        Color borderSoft;
+
+        if (light)
         {
-            bg = Blend(bg, Color.Black, 0.18);
+            surface = Blend(bg, Color.White, 0.7);
+            raised = Blend(bg, Color.White, 0.45);
+            hover = Blend(bg, Color.Black, 0.06);
+            field = Blend(bg, Color.White, 0.8);
+            border = Blend(bg, Color.Black, 0.2);
+            borderSoft = Blend(bg, Color.Black, 0.11);
+        }
+        else
+        {
+            var guard = 0;
+            while (Luminance(bg) > 0.42 && guard++ < 12)
+            {
+                bg = Blend(bg, Color.Black, 0.18);
+            }
+
+            surface = Blend(bg, Color.White, 0.055);
+            raised = Blend(bg, Color.White, 0.095);
+            hover = Blend(bg, Color.White, 0.145);
+            field = Blend(bg, Color.Black, 0.34);
+            border = Blend(bg, Color.White, 0.16);
+            borderSoft = Blend(bg, Color.White, 0.09);
         }
 
-        var surface = Blend(bg, Color.White, 0.055);
-        var raised = Blend(bg, Color.White, 0.095);
-        var hover = Blend(bg, Color.White, 0.145);
-        var field = Blend(bg, Color.Black, 0.34);
-        var border = Blend(bg, Color.White, 0.16);
-        var borderSoft = Blend(bg, Color.White, 0.09);
         return new ThemePalette(
             "custom",
             name,
@@ -171,6 +221,18 @@ internal static class Theme
 
     public static void Apply(ThemePalette palette)
     {
+        _previousText = Text;
+        _previousTextSoft = TextSoft;
+        _previousMuted = Muted;
+        _previousMutedDim = MutedDim;
+        _previousAccent = Accent;
+        _previousAccentSoft = AccentSoft;
+        _previousGreen = Green;
+        _previousBlue = Blue;
+        _previousAmber = Amber;
+        _previousPurple = Purple;
+        _previousCyan = Cyan;
+
         Bg = palette.Bg;
         Surface = palette.Surface;
         SurfaceRaised = palette.SurfaceRaised;
@@ -178,7 +240,74 @@ internal static class Theme
         Field = palette.Field;
         Border = palette.Border;
         BorderSoft = palette.BorderSoft;
+        IsLight = palette.IsLight;
         CurrentPalette = palette;
+
+        if (IsLight)
+        {
+            Text = Hex("#18202D");
+            TextSoft = Hex("#344054");
+            Muted = Hex("#5E6B7C");
+            MutedDim = Hex("#8793A3");
+            Accent = Hex("#D64550");
+            AccentSoft = Hex("#B83240");
+            Green = Hex("#0B8F63");
+            Blue = Hex("#2563EB");
+            Amber = Hex("#A16207");
+            Purple = Hex("#6D28D9");
+            Cyan = Hex("#0E7490");
+        }
+        else
+        {
+            Text = Hex("#F2F5FA");
+            TextSoft = Hex("#C5CDDB");
+            Muted = Hex("#8B96A9");
+            MutedDim = Hex("#626D7E");
+            Accent = Hex("#FF6B6B");
+            AccentSoft = Hex("#FF9A8A");
+            Green = Hex("#46D9A0");
+            Blue = Hex("#6FA8FF");
+            Amber = Hex("#FFC857");
+            Purple = Hex("#B59BFF");
+            Cyan = Hex("#58D6E8");
+        }
+    }
+
+    public static Color Contrast(Color color) =>
+        Luminance(color) > 0.62 ? Hex("#101720") : Color.White;
+
+    public static Color MapForeground(Color color)
+    {
+        if (color == _previousText) return Text;
+        if (color == _previousTextSoft) return TextSoft;
+        if (color == _previousMuted) return Muted;
+        if (color == _previousMutedDim) return MutedDim;
+        if (color == _previousAccent) return Accent;
+        if (color == _previousAccentSoft) return AccentSoft;
+        if (color == _previousGreen) return Green;
+        if (color == _previousBlue) return Blue;
+        if (color == _previousAmber) return Amber;
+        if (color == _previousPurple) return Purple;
+        if (color == _previousCyan) return Cyan;
+        return color;
+    }
+
+    public static Bitmap? CreateBackdrop(Size size)
+    {
+        if (!HasGradient || size.Width < 2 || size.Height < 2)
+        {
+            return null;
+        }
+
+        var bitmap = new Bitmap(size.Width, size.Height);
+        using var graphics = Graphics.FromImage(bitmap);
+        using var brush = new LinearGradientBrush(
+            new Rectangle(0, 0, size.Width, size.Height),
+            Bg,
+            GradientEnd,
+            135f);
+        graphics.FillRectangle(brush, 0, 0, size.Width, size.Height);
+        return bitmap;
     }
 
     public static void RecolorControlTree(
@@ -195,6 +324,11 @@ internal static class Theme
         if (root.BackColor.A != 0 && root.BackColor != Color.Transparent)
         {
             root.BackColor = MapColor(root.BackColor, oldPalette, newPalette);
+        }
+
+        if (root.ForeColor.A != 0)
+        {
+            root.ForeColor = MapForeground(root.ForeColor);
         }
 
         root.Invalidate();
@@ -216,7 +350,7 @@ internal static class Theme
         return color;
     }
 
-    private static double Luminance(Color color) =>
+    public static double Luminance(Color color) =>
         (0.299 * color.R + 0.587 * color.G + 0.114 * color.B) / 255.0;
 
     public static GraphicsPath Rounded(RectangleF bounds, float radius)

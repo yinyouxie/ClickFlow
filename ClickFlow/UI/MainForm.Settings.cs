@@ -29,8 +29,11 @@ internal sealed partial class MainForm
         _settings.UiScale = Math.Clamp(dialog.UiScale, 0.9, 1.1);
         _settings.StartupPage = dialog.StartupPage;
         _settings.CheckUpdatesOnStartup = dialog.CheckUpdatesOnStartup;
+        _settings.RecordMouseMoves = dialog.RecordMouseMoves;
+        _settings.RestoreCursor = dialog.RestoreCursor;
         _settings.Language = "zh-CN";
         MacroStore.SaveSettings(_settings);
+        ApplySettingsToUi();
 
         if (paletteChanged)
         {

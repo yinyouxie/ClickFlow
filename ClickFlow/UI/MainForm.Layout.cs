@@ -58,6 +58,7 @@ internal sealed partial class MainForm
         AutoScaleMode = AutoScaleMode.Dpi;
         AutoScaleDimensions = new SizeF(96F, 96F);
         BackColor = Theme.Bg;
+        BackgroundImageLayout = ImageLayout.Stretch;
         ForeColor = Theme.Text;
         Font = Theme.Body;
         Text = "轻录 ClickFlow";
@@ -337,8 +338,8 @@ internal sealed partial class MainForm
 
         _speedSeg = new SegmentedControl
         {
-            Items = new[] { "0.5×", "1×", "2×", "4×" },
-            SelectedIndex = 1,
+            Items = new[] { "0.25×", "0.5×", "1×", "2×", "4×" },
+            SelectedIndex = 2,
             AccentColor = Theme.Blue,
             SelectedTextColor = Theme.Text,
             Dock = DockStyle.Fill,
@@ -926,7 +927,7 @@ internal sealed partial class MainForm
         };
         _footerVersion = new Label
         {
-            Text = "v1.1.4",
+            Text = "v1.1.5",
             Font = Theme.TinyMono,
             ForeColor = Theme.MutedDim,
             BackColor = Color.Transparent,

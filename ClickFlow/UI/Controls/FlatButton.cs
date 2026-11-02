@@ -120,9 +120,10 @@ internal class FlatButton : Control
                 1.2f);
         }
 
+        var solidText = Theme.Contrast(AccentColor);
         var textColor = CustomTextColor ??
-            (Style == FlatButtonStyle.Solid ? Theme.Bg : enabled ? Theme.Text : Theme.MutedDim);
-        var iconColor = Style == FlatButtonStyle.Solid ? Theme.Bg : accent;
+            (Style == FlatButtonStyle.Solid ? solidText : enabled ? Theme.Text : Theme.MutedDim);
+        var iconColor = Style == FlatButtonStyle.Solid ? solidText : accent;
         var offset = _pressed ? 1 : 0;
 
         var hasText = !string.IsNullOrEmpty(Text);
@@ -189,21 +190,21 @@ internal class FlatButton : Control
                     hkRect,
                     6 * scale,
                     Style == FlatButtonStyle.Solid
-                        ? Theme.Alpha(Theme.Bg, 32)
-                        : Theme.Alpha(Theme.Bg, 120));
+                        ? Theme.Alpha(solidText, 35)
+                        : Theme.Alpha(Theme.Field, 180));
                 Theme.DrawRounded(
                     e.Graphics,
                     hkRect,
                     6 * scale,
                     Style == FlatButtonStyle.Solid
-                        ? Theme.Alpha(Theme.Bg, 45)
+                        ? Theme.Alpha(solidText, 70)
                         : Theme.Border);
                 TextRenderer.DrawText(
                     e.Graphics,
                     Hotkey,
                     Theme.TinyMono,
                     hkRect.ToRectangle(),
-                    Style == FlatButtonStyle.Solid ? Theme.Bg : Theme.Muted,
+                    Style == FlatButtonStyle.Solid ? solidText : Theme.Muted,
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter |
                     TextFormatFlags.SingleLine | TextFormatFlags.NoPadding);
             }

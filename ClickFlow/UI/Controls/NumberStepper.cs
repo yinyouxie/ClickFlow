@@ -11,6 +11,8 @@ internal class NumberStepper : Control
     private string _suffix = string.Empty;
     private bool _hoverLeft;
     private bool _hoverRight;
+    private readonly TextBox _editor;
+    private bool _syncing;
 
     public int Value
     {
@@ -24,6 +26,7 @@ internal class NumberStepper : Control
             }
 
             _value = next;
+            SyncEditor();
             Invalidate();
             ValueChanged?.Invoke(this, EventArgs.Empty);
         }
@@ -64,7 +67,12 @@ internal class NumberStepper : Control
     public string Suffix
     {
         get => _suffix;
-        set { _suffix = value ?? string.Empty; Invalidate(); }
+        set
+        {
+            _suffix = value ?? string.Empty;
+            SyncEditor();
+            Invalidate();
+        }
     }
 
     public string ZeroText { get; set; } = "0";
@@ -87,6 +95,35 @@ internal class NumberStepper : Control
         Cursor = Cursors.Hand;
         TabStop = true;
         AccessibleRole = AccessibleRole.SpinButton;
+
+        _editor = new TextBox
+        {
+            BorderStyle = BorderStyle.None,
+            TextAlign = HorizontalAlignment.Center,
+            BackColor = Theme.Field,
+            ForeColor = Theme.Text,
+            Font = Theme.BodyBold,
+            ShortcutsEnabled = true,
+            MaxLength = 10
+        };
+        _editor.KeyDown += EditorKeyDown;
+        _editor.GotFocus += (_, _) =>
+        {
+            if (Value == 0 && _editor.Text == ZeroText)
+            {
+                _editor.Text = "0";
+            }
+
+            _editor.SelectAll();
+        };
+        _editor.LostFocus += (_, _) =>
+        {
+            CommitEditor();
+            SyncEditor();
+        };
+        Controls.Add(_editor);
+        LayoutEditor();
+        SyncEditor();
     }
 
     protected override void OnPaintBackground(PaintEventArgs e)
@@ -108,7 +145,7 @@ internal class NumberStepper : Control
             e.Graphics,
             rect,
             9,
-            Focused && enabled ? Theme.Alpha(Theme.Blue, 120) : Theme.Border);
+            ContainsFocus && enabled ? Theme.Alpha(Theme.Blue, 120) : Theme.Border);
 
         var buttonWidth = 27f;
         var leftRect = new RectangleF(0, 0, buttonWidth, Height);
@@ -139,22 +176,88 @@ internal class NumberStepper : Control
             rightColor,
             1.5f);
 
-        var display = Value == 0 && !string.IsNullOrEmpty(ZeroText)
-            ? ZeroText
-            : Value.ToString();
-        if (!string.IsNullOrEmpty(Suffix))
+    }
+
+    protected override void OnResize(EventArgs e)
+    {
+        base.OnResize(e);
+        LayoutEditor();
+    }
+
+    private void LayoutEditor()
+    {
+        if (_editor is null)
         {
-            display += " " + Suffix;
+            return;
         }
 
-        TextRenderer.DrawText(
-            e.Graphics,
-            display,
-            Font,
-            new Rectangle((int)buttonWidth, 0, Math.Max(1, (int)(Width - buttonWidth * 2)), Height + 1),
-            enabled ? Theme.Text : Theme.MutedDim,
-            TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter |
-            TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPadding);
+        var height = Math.Max(12, Height - 10);
+        _editor.SetBounds(30, 5, Math.Max(18, Width - 60), height);
+        _editor.BackColor = Enabled ? Theme.Field : Theme.Blend(Theme.Field, Theme.Bg, 0.55);
+        _editor.ForeColor = Enabled ? Theme.Text : Theme.MutedDim;
+    }
+
+    private void EditorKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.KeyCode == Keys.Enter)
+        {
+            CommitEditor();
+            SyncEditor();
+            e.SuppressKeyPress = true;
+            _editor.SelectAll();
+        }
+        else if (e.KeyCode == Keys.Escape)
+        {
+            SyncEditor();
+            e.SuppressKeyPress = true;
+        }
+        else if (e.KeyCode is Keys.Up or Keys.Down)
+        {
+            Adjust(e.KeyCode == Keys.Up ? Step : -Step);
+            SyncEditor();
+            e.SuppressKeyPress = true;
+        }
+    }
+
+    private void CommitEditor()
+    {
+        var text = _editor.Text.Trim();
+        if (!string.IsNullOrEmpty(_suffix) &&
+            text.EndsWith(_suffix, StringComparison.OrdinalIgnoreCase))
+        {
+            text = text[..^_suffix.Length].Trim();
+        }
+
+        if (text == ZeroText && Value == 0)
+        {
+            return;
+        }
+
+        text = text.Replace(",", string.Empty).Replace(" ", string.Empty);
+        if (int.TryParse(text, out var parsed))
+        {
+            Value = parsed;
+        }
+    }
+
+    private void SyncEditor()
+    {
+        if (_editor == null || _syncing)
+        {
+            return;
+        }
+
+        _syncing = true;
+        var text = Value == 0 && !string.IsNullOrEmpty(ZeroText)
+            ? ZeroText
+            : Value.ToString();
+        if (!string.IsNullOrEmpty(_suffix))
+        {
+            text += " " + _suffix;
+        }
+
+        _editor.Text = text;
+        _syncing = false;
     }
 
     protected override void OnMouseMove(MouseEventArgs e)
@@ -217,9 +320,10 @@ internal class NumberStepper : Control
 
     protected override void OnMouseWheel(MouseEventArgs e)
     {
-        if (Enabled && Focused)
+        if (Enabled && ContainsFocus)
         {
             Adjust(e.Delta > 0 ? Step : -Step);
+            SyncEditor();
         }
 
         base.OnMouseWheel(e);
@@ -228,8 +332,10 @@ internal class NumberStepper : Control
     protected override void OnEnabledChanged(EventArgs e)
     {
         Cursor = Enabled ? Cursors.Hand : Cursors.Default;
+        _editor.Enabled = Enabled;
         _hoverLeft = false;
         _hoverRight = false;
+        LayoutEditor();
         Invalidate();
         base.OnEnabledChanged(e);
     }

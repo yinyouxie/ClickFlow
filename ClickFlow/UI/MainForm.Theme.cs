@@ -15,6 +15,8 @@ internal sealed partial class MainForm
         var previous = Theme.CurrentPalette;
         Theme.Apply(palette);
         BackColor = Theme.Bg;
+        UpdateBackdrop();
+        WindowEffects.ApplyDarkChrome(this);
         Theme.RecolorControlTree(this, previous, palette);
 
         _settings.ThemeId = palette.Id;

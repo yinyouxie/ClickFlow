@@ -64,7 +64,7 @@ internal class ModernCheckBox : Control
                 e.Graphics,
                 Glyph.Check,
                 new RectangleF(box.Left + 2, box.Top + 2, 12, 12),
-                Theme.Bg,
+                Theme.Contrast(accent),
                 1.7f);
         }
         else

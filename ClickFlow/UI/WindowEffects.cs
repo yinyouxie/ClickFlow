@@ -37,7 +37,7 @@ internal static class WindowEffects
 
         try
         {
-            var dark = 1;
+            var dark = Theme.IsLight ? 0 : 1;
             DwmSetWindowAttribute(form.Handle, DwmwaUseImmersiveDarkMode, ref dark, sizeof(int));
 
             var rounded = 2;
