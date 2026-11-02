@@ -15,37 +15,67 @@ internal class AutoPulseView : Control
     public long Count
     {
         get => _count;
-        set { _count = value; Invalidate(); }
+        set
+        {
+            if (_count == value) return;
+            _count = value;
+            Invalidate();
+        }
     }
 
     public bool Running
     {
         get => _running;
-        set { _running = value; Invalidate(); }
+        set
+        {
+            if (_running == value) return;
+            _running = value;
+            Invalidate();
+        }
     }
 
     public float PulsePhase
     {
         get => _pulsePhase;
-        set { _pulsePhase = value; Invalidate(); }
+        set
+        {
+            if (Math.Abs(_pulsePhase - value) < 0.0005f) return;
+            _pulsePhase = value;
+            Invalidate();
+        }
     }
 
     public string Status
     {
         get => _status;
-        set { _status = value; Invalidate(); }
+        set
+        {
+            if (_status == value) return;
+            _status = value ?? string.Empty;
+            Invalidate();
+        }
     }
 
     public string Detail
     {
         get => _detail;
-        set { _detail = value; Invalidate(); }
+        set
+        {
+            if (_detail == value) return;
+            _detail = value ?? string.Empty;
+            Invalidate();
+        }
     }
 
     public string PositionText
     {
         get => _position;
-        set { _position = value; Invalidate(); }
+        set
+        {
+            if (_position == value) return;
+            _position = value ?? string.Empty;
+            Invalidate();
+        }
     }
 
     public AutoPulseView()

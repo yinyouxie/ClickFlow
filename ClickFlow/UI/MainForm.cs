@@ -43,6 +43,7 @@ internal sealed partial class MainForm : Form
     private DateTime _toastUntil = DateTime.MinValue;
     private string? _toastText;
     private string _lastPillText = string.Empty;
+    private bool? _lastUiIdle;
     private string _lastHudSignature = string.Empty;
     private string _lastFooterText = string.Empty;
     private float _pulse;
@@ -701,9 +702,13 @@ internal sealed partial class MainForm : Form
         _settingsButton.Enabled = idle;
         _nav.Enabled = idle;
 
-        foreach (var card in _historyCards)
+        if (_lastUiIdle != idle)
         {
-            card.Enabled = idle;
+            _lastUiIdle = idle;
+            foreach (var card in _historyCards)
+            {
+                card.Enabled = idle;
+            }
         }
 
         _speedStepper.Enabled = idle;

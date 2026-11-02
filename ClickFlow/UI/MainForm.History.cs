@@ -67,9 +67,20 @@ internal sealed partial class MainForm
             260,
             _historyFlow.ClientSize.Width - _historyFlow.Padding.Horizontal -
             SystemInformation.VerticalScrollBarWidth - 10);
-        foreach (var card in _historyCards)
+        _historyFlow.SuspendLayout();
+        try
         {
-            card.Width = width;
+            foreach (var card in _historyCards)
+            {
+                if (card.Width != width)
+                {
+                    card.Width = width;
+                }
+            }
+        }
+        finally
+        {
+            _historyFlow.ResumeLayout(true);
         }
     }
 

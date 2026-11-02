@@ -928,7 +928,7 @@ internal sealed partial class MainForm
         };
         _footerVersion = new Label
         {
-            Text = "v1.2.0",
+            Text = "v1.2.1",
             Font = Theme.TinyMono,
             ForeColor = Theme.MutedDim,
             BackColor = Color.Transparent,

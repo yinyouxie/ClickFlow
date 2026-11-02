@@ -29,19 +29,34 @@ internal class RecordCard : Control
     public bool IsRecording
     {
         get => _recording;
-        set { _recording = value; Invalidate(); }
+        set
+        {
+            if (_recording == value) return;
+            _recording = value;
+            Invalidate();
+        }
     }
 
     public float PulsePhase
     {
         get => _pulsePhase;
-        set { _pulsePhase = value; Invalidate(); }
+        set
+        {
+            if (Math.Abs(_pulsePhase - value) < 0.0005f) return;
+            _pulsePhase = value;
+            Invalidate();
+        }
     }
 
     public string Hint
     {
         get => _hint;
-        set { _hint = value; Invalidate(); }
+        set
+        {
+            if (_hint == value) return;
+            _hint = value ?? string.Empty;
+            Invalidate();
+        }
     }
 
     public RecordCard()

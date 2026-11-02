@@ -1,4 +1,4 @@
-轻录 ClickFlow 1.2.0
+轻录 ClickFlow 1.2.1
 ====================
 
 1. 解压后双击 ClickFlow.exe，不需要安装。

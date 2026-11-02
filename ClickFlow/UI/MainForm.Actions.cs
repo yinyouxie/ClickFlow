@@ -187,6 +187,11 @@ internal sealed partial class MainForm
 
     private void OnNavigationChanged()
     {
+        if (_suppressUi)
+        {
+            return;
+        }
+
         var requested = (AppMode)Math.Clamp(_nav.SelectedIndex, 0, 1);
         if (_state != RunState.Idle)
         {
@@ -213,18 +218,32 @@ internal sealed partial class MainForm
 
     private void SetMode(AppMode mode)
     {
+        if (_mode == mode &&
+            _leftMacro.Visible == (mode == AppMode.Macro))
+        {
+            return;
+        }
+
         _mode = mode;
         _suppressUi = true;
-        _nav.SelectedIndex = (int)mode;
-        _suppressUi = false;
+        _root.SuspendLayout();
+        _body.SuspendLayout();
+        try
+        {
+            _nav.SelectedIndex = (int)mode;
+            var macro = mode == AppMode.Macro;
+            _leftMacro.Visible = macro;
+            _rightMacro.Visible = macro;
+            _leftAuto.Visible = !macro;
+            _rightAuto.Visible = !macro;
+        }
+        finally
+        {
+            _body.ResumeLayout(true);
+            _root.ResumeLayout(true);
+            _suppressUi = false;
+        }
 
-        var macro = mode == AppMode.Macro;
-        _leftMacro.Visible = macro;
-        _rightMacro.Visible = macro;
-        _leftAuto.Visible = !macro;
-        _rightAuto.Visible = !macro;
-        _body.PerformLayout();
-        UpdateFooter();
         RefreshShell();
     }
 
@@ -759,7 +778,7 @@ internal sealed partial class MainForm
         {
             Name = name,
             CreatedUtc = DateTime.UtcNow,
-            AppVersion = "1.2.0",
+            AppVersion = "1.2.1",
             ScreenWidth = screen.Width,
             ScreenHeight = screen.Height,
             Events = events
