@@ -1,4 +1,5 @@
 using System.Drawing.Drawing2D;
+using System.Globalization;
 
 namespace ClickFlow.UI.Controls;
 
@@ -8,6 +9,7 @@ internal class NumberStepper : Control
     private int _min;
     private int _max = 100;
     private int _step = 1;
+    private int _scale = 1;
     private string _suffix = string.Empty;
     private bool _hoverLeft;
     private bool _hoverRight;
@@ -62,6 +64,17 @@ internal class NumberStepper : Control
     {
         get => _step;
         set => _step = Math.Max(1, value);
+    }
+
+    /// <summary>100 displays 125 as 1.25; 1 keeps the raw integer.</summary>
+    public int ValueScale
+    {
+        get => _scale;
+        set
+        {
+            _scale = Math.Max(1, value);
+            SyncEditor();
+        }
     }
 
     public string Suffix
@@ -234,9 +247,28 @@ internal class NumberStepper : Control
         }
 
         text = text.Replace(",", string.Empty).Replace(" ", string.Empty);
-        if (int.TryParse(text, out var parsed))
+        if (_scale > 1)
         {
-            Value = parsed;
+            if (double.TryParse(
+                    text,
+                    NumberStyles.Float,
+                    CultureInfo.InvariantCulture,
+                    out var parsed) ||
+                double.TryParse(
+                    text,
+                    NumberStyles.Float,
+                    CultureInfo.CurrentCulture,
+                    out parsed))
+            {
+                Value = (int)Math.Round(parsed * _scale);
+            }
+
+            return;
+        }
+
+        if (int.TryParse(text, out var integer))
+        {
+            Value = integer;
         }
     }
 
@@ -250,14 +282,24 @@ internal class NumberStepper : Control
         _syncing = true;
         var text = Value == 0 && !string.IsNullOrEmpty(ZeroText)
             ? ZeroText
-            : Value.ToString();
+            : FormatValue();
         if (!string.IsNullOrEmpty(_suffix))
         {
-            text += " " + _suffix;
+            text += _suffix == "×" ? _suffix : " " + _suffix;
         }
 
         _editor.Text = text;
         _syncing = false;
+    }
+
+    private string FormatValue()
+    {
+        if (_scale <= 1)
+        {
+            return Value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        return (Value / (double)_scale).ToString("0.##", CultureInfo.InvariantCulture);
     }
 
     protected override void OnMouseMove(MouseEventArgs e)

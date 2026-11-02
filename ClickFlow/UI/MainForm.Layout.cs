@@ -20,7 +20,7 @@ internal sealed partial class MainForm
     private RecordCard _recordCard = null!;
     private FlatButton _playButton = null!;
     private FlatButton _stopButton = null!;
-    private SegmentedControl _speedSeg = null!;
+    private NumberStepper _speedStepper = null!;
     private SegmentedControl _delaySeg = null!;
     private NumberStepper _loopStepper = null!;
     private ModernCheckBox _recordMovesCheck = null!;
@@ -336,15 +336,16 @@ internal sealed partial class MainForm
         header.Controls.Add(headerHint);
         header.Resize += (_, _) => headerHint.Location = new Point(header.Width - headerHint.Width, 3);
 
-        _speedSeg = new SegmentedControl
+        _speedStepper = new NumberStepper
         {
-            Items = new[] { "0.25×", "0.5×", "1×", "2×", "4×" },
-            SelectedIndex = 2,
-            AccentColor = Theme.Blue,
-            SelectedTextColor = Theme.Text,
+            Min = 25,
+            Max = 400,
+            Step = 25,
+            ValueScale = 100,
+            Value = 100,
+            Suffix = "×",
             Dock = DockStyle.Fill,
-            Margin = new Padding(0, 4, 0, 4),
-            Font = Theme.BodySmall
+            Margin = new Padding(0, 4, 0, 4)
         };
         _delaySeg = new SegmentedControl
         {
@@ -382,7 +383,7 @@ internal sealed partial class MainForm
             AccentColor = Theme.Green
         };
 
-        var speedRow = SettingRow("回放速度", _speedSeg);
+        var speedRow = SettingRow("回放速度", _speedStepper);
         var delayRow = SettingRow("准备时间", _delaySeg);
         var loopRow = SettingRow("循环次数", _loopStepper);
 
@@ -397,7 +398,7 @@ internal sealed partial class MainForm
         };
         var tipText = new Label
         {
-            Text = "回放按原始时间轴进行，速度会等比例缩放。\n停止时会自动松开所有按住的键。",
+            Text = "回放按原始时间轴进行，速度按 0.25× 步进（0.25–4×）。\n停止时会自动松开所有按住的键。",
             Font = Theme.BodySmall,
             ForeColor = Theme.Muted,
             BackColor = Color.Transparent,
@@ -927,7 +928,7 @@ internal sealed partial class MainForm
         };
         _footerVersion = new Label
         {
-            Text = "v1.1.5",
+            Text = "v1.1.6",
             Font = Theme.TinyMono,
             ForeColor = Theme.MutedDim,
             BackColor = Color.Transparent,

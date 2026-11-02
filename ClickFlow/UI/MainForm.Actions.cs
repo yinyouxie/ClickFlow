@@ -33,15 +33,15 @@ internal sealed partial class MainForm
             }
         };
 
-        _speedSeg.SelectedIndexChanged += (_, _) =>
+        _speedStepper.ValueChanged += (_, _) =>
         {
             if (_suppressUi)
             {
                 return;
             }
 
-            _settings.PlaybackSpeed = SpeedValues[Math.Clamp(_speedSeg.SelectedIndex, 0, SpeedValues.Length - 1)];
-            ShowToast($"回放速度：{_settings.PlaybackSpeed:0.#}×", 1.6);
+            _settings.PlaybackSpeed = _speedStepper.Value / 100.0;
+            ShowToast($"回放速度：{_settings.PlaybackSpeed:0.##}×", 1.6);
         };
         _delaySeg.SelectedIndexChanged += (_, _) =>
         {
@@ -113,6 +113,8 @@ internal sealed partial class MainForm
         _toolTip.SetToolTip(_importButton, "把外部 .cfmacro 导入录制历史 (Ctrl+O)");
         _toolTip.SetToolTip(_folderButton, "打开录制文件所在文件夹");
         _toolTip.SetToolTip(_captureButton, "读取当前鼠标坐标；也可以在任意窗口按 F5");
+        _toolTip.SetToolTip(_speedStepper, "每次 ±0.25×；也可以点击数字直接输入");
+        _toolTip.SetToolTip(_loopStepper, "点击数字直接输入循环次数，范围 1–999");
         _toolTip.SetToolTip(_recordCard, "开始或停止录制 (F1)");
         _toolTip.SetToolTip(_playButton, "回放选中的录制 (F2)");
         _toolTip.SetToolTip(_stopButton, "立即停止录制、回放或连点 (F3)");

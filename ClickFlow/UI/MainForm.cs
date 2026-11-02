@@ -19,7 +19,6 @@ internal sealed partial class MainForm : Form
     private const int HotkeyCaptureAlt = 0x5A15;
     private const int HotkeyStopF6 = 0x5A16;
 
-    private static readonly double[] SpeedValues = { 0.25, 0.5, 1.0, 2.0, 4.0 };
     private static readonly int[] DelayValues = { 0, 3, 5 };
     private static readonly TimeSpan ToastDuration = TimeSpan.FromSeconds(4);
 
@@ -679,7 +678,7 @@ internal sealed partial class MainForm : Form
             card.Enabled = idle;
         }
 
-        _speedSeg.Enabled = idle;
+        _speedStepper.Enabled = idle;
         _delaySeg.Enabled = idle;
         _loopStepper.Enabled = idle;
         _recordMovesCheck.Enabled = idle;
@@ -716,19 +715,10 @@ internal sealed partial class MainForm : Form
     {
         _suppressUi = true;
 
-        var speedIndex = 1;
-        var best = double.MaxValue;
-        for (var i = 0; i < SpeedValues.Length; i++)
-        {
-            var diff = Math.Abs(SpeedValues[i] - _settings.PlaybackSpeed);
-            if (diff < best)
-            {
-                best = diff;
-                speedIndex = i;
-            }
-        }
-
-        _speedSeg.SelectedIndex = speedIndex;
+        _speedStepper.Value = Math.Clamp(
+            (int)Math.Round(_settings.PlaybackSpeed * 100),
+            _speedStepper.Min,
+            _speedStepper.Max);
         _delaySeg.SelectedIndex = Array.IndexOf(DelayValues, _settings.StartDelaySeconds) is var delayIndex and >= 0
             ? delayIndex
             : 1;
@@ -751,7 +741,7 @@ internal sealed partial class MainForm : Form
 
     private void CollectSettings()
     {
-        _settings.PlaybackSpeed = SpeedValues[Math.Clamp(_speedSeg.SelectedIndex, 0, SpeedValues.Length - 1)];
+        _settings.PlaybackSpeed = _speedStepper.Value / 100.0;
         _settings.LoopCount = _loopStepper.Value;
         _settings.RecordMouseMoves = _recordMovesCheck.Checked;
         _settings.RestoreCursor = _restoreCursorCheck.Checked;
