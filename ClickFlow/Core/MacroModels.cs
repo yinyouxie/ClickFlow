@@ -42,7 +42,7 @@ public sealed class MacroDocument
     public int Version { get; set; } = 1;
     public string Name { get; set; } = L.T("未命名宏", "Untitled macro");
     public DateTime CreatedUtc { get; set; } = DateTime.UtcNow;
-    public string AppVersion { get; set; } = "1.2.1";
+    public string AppVersion { get; set; } = "1.2.2";
     public int ScreenWidth { get; set; }
     public int ScreenHeight { get; set; }
     public List<MacroEvent> Events { get; set; } = new();

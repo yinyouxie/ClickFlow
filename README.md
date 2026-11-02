@@ -10,6 +10,13 @@
 
 ![English UI](screenshots/english.png)
 
+## 1.2.2 修复设置窗口 GDI+ 崩溃
+
+- 修复关闭设置窗口或切换主题时偶发 `System.ArgumentException: Parameter is not valid`。
+- 原因是渐变背景图在 `OnFormClosed` 中被提前释放，但窗口和透明子控件仍在用它绘制。
+- 现在先解除背景图引用，再延迟释放旧背景，避免透明控件绘制已释放的 Image。
+- 修复后关闭渐变主题设置窗口不再出现红色叉形花屏和崩溃提示。
+
 ## 1.2.1 页面切换性能修复
 
 - 切换“宏录制 / 自动连点”时暂停父级布局，去掉重复的强制 `PerformLayout` 和重复状态刷新。

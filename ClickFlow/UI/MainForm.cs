@@ -146,7 +146,23 @@ internal sealed partial class MainForm : Form
         var previous = _backdrop;
         _backdrop = next;
         BackgroundImage = next;
-        previous?.Dispose();
+        if (previous != null && !ReferenceEquals(previous, next))
+        {
+            if (IsHandleCreated && !IsDisposed)
+            {
+                BeginInvoke(new Action(() =>
+                {
+                    if (!ReferenceEquals(BackgroundImage, previous))
+                    {
+                        previous.Dispose();
+                    }
+                }));
+            }
+            else
+            {
+                previous.Dispose();
+            }
+        }
     }
 
     protected override void OnHandleDestroyed(EventArgs e)
@@ -249,6 +265,9 @@ internal sealed partial class MainForm : Form
 
     protected override void OnFormClosed(FormClosedEventArgs e)
     {
+        BackgroundImage = null;
+        _backdrop?.Dispose();
+        _backdrop = null;
         _inputGuard.Dispose();
         _hud?.Dispose();
         _toolTip.Dispose();

@@ -204,6 +204,7 @@ internal sealed class SettingsDialog : Form
 
     protected override void OnFormClosed(FormClosedEventArgs e)
     {
+        BackgroundImage = null;
         _backdrop?.Dispose();
         _backdrop = null;
         base.OnFormClosed(e);
@@ -215,7 +216,23 @@ internal sealed class SettingsDialog : Form
         var previous = _backdrop;
         _backdrop = next;
         BackgroundImage = next;
-        previous?.Dispose();
+        if (previous != null && !ReferenceEquals(previous, next))
+        {
+            if (IsHandleCreated && !IsDisposed)
+            {
+                BeginInvoke(new Action(() =>
+                {
+                    if (!ReferenceEquals(BackgroundImage, previous))
+                    {
+                        previous.Dispose();
+                    }
+                }));
+            }
+            else
+            {
+                previous.Dispose();
+            }
+        }
     }
 
     private RoundedPanel BuildAppearance(out SegmentedControl fontScale)

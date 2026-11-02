@@ -778,7 +778,7 @@ internal sealed partial class MainForm
         {
             Name = name,
             CreatedUtc = DateTime.UtcNow,
-            AppVersion = "1.2.1",
+            AppVersion = "1.2.2",
             ScreenWidth = screen.Width,
             ScreenHeight = screen.Height,
             Events = events
